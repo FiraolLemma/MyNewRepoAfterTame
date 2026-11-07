@@ -1,0 +1,163 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Manage Poultry{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <h1>Manage Poultry</h1>
+
+  <h2>Poultry Items</h2>
+  <table border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Stock</th>
+        <th>Price</th>
+        <th>Created At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.id }}</td>
+        <td>{{ item.name }}</td>
+        <td>{{ item.stock }}</td>
+        <td>{{ item.price }}</td>
+        <td>{{ item.created_at }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5">No poultry items available.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Egg Sellers</h2>
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Farm Name</th>
+            <th>City</th>
+            <th>Type</th>
+            <th>Certification</th>
+            <th>Quantity</th>
+            <th>Price/Dozen</th>
+            <th>Verified</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for seller in egg_sellers %}
+        <tr>
+            <td>{{ seller.farm_name }}</td>
+            <td>{{ seller.city }}</td>
+            <td>{{ seller.get_egg_type_display }}</td>
+            <td>{{ seller.get_certification_display }}</td>
+            <td>{{ seller.quantity_available }}</td>
+            <td>${{ seller.price_per_dozen }}</td>
+            <td>{{ seller.is_verified }}</td>
+            <td>{{ seller.is_active }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8">No Egg Sellers found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<h2>Chicken Sellers</h2>
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Farm Name</th>
+            <th>Location</th>
+            <th>Quantity</th>
+            <th>Price Range</th>
+            <th>Breeds</th>
+            <th>Vaccinated</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for seller in chicken_sellers %}
+        <tr>
+            <td>{{ seller.farm_name }}</td>
+            <td>{{ seller.location }}</td>
+            <td>{{ seller.available_quantity }}</td>
+            <td>{{ seller.price_range }}</td>
+            <td>{{ seller.breeds }}</td>
+            <td>{{ seller.vaccinated }}</td>
+            <td>{{ seller.is_active }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">No Chicken Sellers found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<h2>Consultants</h2>
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Specialty</th>
+            <th>Experience (yrs)</th>
+            <th>Languages</th>
+            <th>Rating</th>
+            <th>Availability</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for consultant in consultants %}
+        <tr>
+            <td>{{ consultant.name }}</td>
+            <td>{{ consultant.get_specialty_display }}</td>
+            <td>{{ consultant.experience }}</td>
+            <td>{{ consultant.languages }}</td>
+            <td>{{ consultant.rating }} ({{ consultant.rating_count }})</td>
+            <td>{{ consultant.get_availability_display }}</td>
+            <td>{{ consultant.email }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">No Consultants found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<h2>Training Enrollments</h2>
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Program</th>
+            <th>Enrolled At</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for training in trainings %}
+        <tr>
+            <td>{{ training.name }}</td>
+            <td>{{ training.email }}</td>
+            <td>{{ training.phone }}</td>
+            <td>{{ training.get_program_display }}</td>
+            <td>{{ training.created_at }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No Training Enrollments found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</div>
+{% endblock %}

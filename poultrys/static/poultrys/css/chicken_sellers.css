@@ -1,0 +1,435 @@
+/* chicken_sellers.css */
+
+/* ---------- Global Page Styles ---------- */
+.chicken-sellers-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    background-color: rgb(236, 236, 236);
+}
+
+.page-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: #2c3e50;
+}
+
+/* ---------- Search & Filter ---------- */
+.search-filter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 800px;
+}
+
+.filter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    flex: 1;
+    justify-content: center;
+}
+
+.filter-grid input[type="text"],
+.filter-grid select {
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    width: 200px;
+}
+
+.filter-grid input[type="text"]:focus,
+.filter-grid select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.filter-btn,
+.clear-btn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+}
+
+.filter-btn {
+    background-color: #3498db;
+    color: #fff;
+}
+
+.filter-btn:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+}
+
+.clear-btn {
+    background-color: #e0e0e0;
+    color: #555;
+}
+
+.clear-btn:hover {
+    background-color: #bdbdbd;
+    transform: scale(1.05);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .filter-grid {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .filter-grid input[type="text"],
+    .filter-grid select {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .filter-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .filter-btn,
+    .clear-btn {
+        width: 100%;
+    }
+}
+
+
+/* ---------- Register Seller Button ---------- */
+.register-seller {
+    text-align: center;
+}
+
+.register-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    background-color: #27ae60;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.register-button:hover {
+    background-color: #1e8449;
+    transform: scale(1.05);
+}
+
+/* ---------- Seller Cards Grid ---------- */
+.seller-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ---------- Individual Seller Card ---------- */
+.user-card {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- Card Header ---------- */
+.user-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    background-color: #f1c40f;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.farm-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.username {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+/* ---------- Card Details ---------- */
+.user-details p {
+    margin: 0.3rem 0;
+    font-size: 0.95rem;
+}
+
+.feature-tag {
+    display: inline-block;
+    background-color: #3498db;
+    color: #fff;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    margin-right: 0.3rem;
+}
+
+.description {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* ---------- Social Links ---------- */
+.social-links {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #fff;
+    background-color: #bdc3c7;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-link.facebook { background-color: #3b5998; }
+.social-link.telegram { background-color: #0088cc; }
+.social-link.whatsapp { background-color: #25d366; }
+.social-link.instagram { background-color: #e4405f; }
+.social-link.youtube { background-color: #ff0000; }
+.social-link.email { background-color: #7f8c8d; }
+
+.social-link:hover {
+    transform: translateY(-5px) scale(1.2);
+}
+
+/* ---------- Card Actions ---------- */
+.user-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.4rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-order {
+    background-color: #e67e22;
+    color: #fff;
+}
+
+.btn-order:hover {
+    background-color: #d35400;
+}
+
+.btn-edit {
+    background-color: #2980b9;
+    color: #fff;
+}
+
+.btn-edit:hover {
+    background-color: #1c5980;
+}
+
+.btn-delete {
+    background-color: #c0392b;
+    color: #fff;
+}
+
+.btn-delete:hover {
+    background-color: #922b21;
+}
+
+/* ---------- No Results ---------- */
+.no-results {
+    display: none;
+    text-align: center;
+    grid-column: 1 / -1;
+    padding: 2rem;
+    color: #7f8c8d;
+}
+
+/* ---------- Modal Styles ---------- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 1.5rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+}
+
+.modal-content p {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.modal .close {
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .filter-grid {
+        flex-direction: column;
+    }
+    
+    .user-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.back-to-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background-color: #f8f9fa;
+    color: #333;
+    text-decoration: none;
+    border-radius: 10px;
+    border: 1px solid #cfcfcf;
+    transition: all 0.3s ease;
+}
+
+.back-to-home:hover {
+    background-color: #f8bc6d;
+    text-decoration: none;
+    border: 1px solid #87dfeb;
+    color: #007bff;
+}

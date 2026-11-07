@@ -1,0 +1,231 @@
+
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans " Create Poultry Item | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'poultrys/css/item_create.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="item-create-wrapper">
+    <div class="item-form-container">
+        <div class="form-header">
+            <div class="form-header-content">
+                <h1 class="item-form-title">{% trans "Create New Item" %}</h1>
+                <p class="form-subtitle">{% trans "Fill in the details below to add a new item to your collection" %}</p>
+            </div>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="item-form" id="itemForm">
+            {% csrf_token %}
+            
+            <div class="form-sections">
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <span class="section-icon">🐔</span>
+                        {% trans "Basic Information" %}
+                    </h3>
+                    <div class="form-grid">
+                        {% for field in form %}
+                            {% if field.name != "sub_images" and field.name != "description" %}
+                            <div class="form-group">
+                                {{ field.label_tag }}
+                                {% if field.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small class="help-text">{{ field.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <span class="section-icon">📝</span>
+                        {% trans "Description" %}
+                    </h3>
+                    <div class="form-group full-width">
+                        {{ form.description.label_tag }}
+                        {{ form.description }}
+                        <div class="char-counter">0 characters</div>
+                        {% if form.description.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.description.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        <small class="help-text">{% trans "Provide detailed information about your item" %}</small>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <span class="section-icon">🖼️</span>
+                        {% trans "Images" %}
+                    </h3>
+                    <div class="form-group full-width image-upload-group">
+                        <label for="id_sub_images" class="upload-label">
+                            <div class="upload-content">
+                                <span class="upload-icon">
+                                    <svg viewBox="0 0 24 24" width="48" height="48">
+                                        <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                                    </svg>
+                                </span>
+                                <span class="upload-text">{% trans "Click to upload images" %}</span>
+                                <span class="file-info">{% trans "PNG, JPG up to 5MB" %}</span>
+                            </div>
+                            {{ form.sub_images }}
+                        </label>
+                        <div class="preview-container" id="imagePreview"></div>
+                        {% if form.sub_images.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.sub_images.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">
+                    <span class="btn-text">{% trans "Save Item" %}</span>
+                    <span class="btn-icon">✓</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'poultrys/js/item_create.js' %}"></script>
+<!-- index.html -->
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'poultryitems/css/item_create.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="item-create-wrapper">
+    <div class="item-form-container">
+        <div class="form-header">
+            <div class="form-header-content">
+                <h1 class="item-form-title">{% trans "Create New Item" %}</h1>
+                <p class="form-subtitle">{% trans "Fill in the details below to add a new item to your collection" %}</p>
+            </div>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="item-form" id="itemForm">
+            {% csrf_token %}
+            
+            <div class="form-sections">
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <span class="section-icon">🐔</span>
+                        {% trans "Basic Information" %}
+                    </h3>
+                    <div class="form-grid">
+                        {% for field in form %}
+                            {% if field.name != "sub_images" and field.name != "description" %}
+                            <div class="form-group">
+                                {{ field.label_tag }}
+                                {% if field.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small class="help-text">{{ field.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <span class="section-icon">📝</span>
+                        {% trans "Description" %}
+                    </h3>
+                    <div class="form-group full-width">
+                        {{ form.description.label_tag }}
+                        {{ form.description }}
+                        <div class="char-counter">0 characters</div>
+                        {% if form.description.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.description.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        <small class="help-text">{% trans "Provide detailed information about your item" %}</small>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <span class="section-icon">🖼️</span>
+                        {% trans "Images" %}
+                    </h3>
+                    <div class="form-group full-width image-upload-group">
+                        <label for="id_sub_images" class="upload-label">
+                            <div class="upload-content">
+                                <span class="upload-icon">
+                                    <svg viewBox="0 0 24 24" width="48" height="48">
+                                        <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                                    </svg>
+                                </span>
+                                <span class="upload-text">{% trans "Click to upload images" %}</span>
+                                <span class="file-info">{% trans "PNG, JPG up to 5MB" %}</span>
+                            </div>
+                            {{ form.sub_images }}
+                        </label>
+                        <div class="preview-container" id="imagePreview"></div>
+                        {% if form.sub_images.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.sub_images.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">
+                    <span class="btn-text">{% trans "Save Item" %}</span>
+                    <span class="btn-icon">✓</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'poultryitems/js/item_create.js' %}"></script>
+{% endblock %}

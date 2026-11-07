@@ -1,0 +1,25 @@
+{% extends "base/base.html" %}
+{% load i18n static %}
+
+{% block title %}{{ service.name }} | {% trans "Dairy Farm Services" %}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'dairys/css/dairy_market.css' %}">{% endblock %}
+
+{% block content %}
+<main class="dairy-market container">
+    <p class="dairy-market__eyebrow"><a href="{% url 'clothings:clothing_list' %}">{% trans "Dairy marketplace" %}</a> / {% trans "Farm services" %}</p>
+    <article class="dairy-service-card dairy-detail__service">
+        <p class="dairy-card__meta">{{ service.get_service_type_display }} · {{ service.location }}</p>
+        <h1>{{ service.name }}</h1>
+        <p>{{ service.description|linebreaksbr }}</p>
+        <p class="dairy-detail__price">{% if service.price %}ETB {{ service.price }}{% else %}{% trans "Contact for price" %}{% endif %}</p>
+        <p><strong>{% trans "Provider" %}:</strong> {{ service.provider.get_full_name|default:service.provider.username }}</p>
+        <a class="dairy-button" href="{% url 'conversation:new' 'clothings' 'dairyservice' service.pk %}">{% trans "Contact provider" %}</a>
+        {% if user == service.provider or user.is_superuser %}
+        <div class="dairy-market__actions">
+            <a class="dairy-button dairy-button--light" href="{% url 'clothings:dairy_service_update' service.slug %}">{% trans "Edit service" %}</a>
+            <a class="dairy-button dairy-button--danger" href="{% url 'clothings:dairy_service_delete' service.slug %}">{% trans "Remove service" %}</a>
+        </div>
+        {% endif %}
+    </article>
+</main>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans " Poultry Item Details | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'poultrys/css/item_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="item-detail" itemscope itemtype="http://schema.org/Product">
+  <div class="item-container">
+    
+    <!-- Left: Main Image + Thumbnails -->
+    <div class="image-section">
+      <img src="{{ item.main_image.url }}" alt="{{ item.name }}" class="main-image" itemprop="image">
+
+      <div class="thumbnail-row">
+        {% for image in item.sub_images.all %}
+          <img src="{{ image.image.url }}" alt="Thumbnail {{ forloop.counter }}" class="thumbnail">
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Right: Details -->
+    <div class="details-section">
+      <div class="title-row">
+        <h1 class="product-title" itemprop="name">{{ item.name }}</h1>
+
+        {% if request.user.is_authenticated and request.user.is_superuser %}
+          <div class="admin-actions">
+            <a href="{% url 'poultrys:item_edit' item.id %}" class="btn small">Edit</a>
+            <form action="{% url 'poultrys:item_delete' item.id %}" method="post" class="inline-form">
+              {% csrf_token %}
+              <button type="submit" class="btn small danger">Delete</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+
+      <p class="meta"><span>{{ item.location }}</span> • <time datetime="{{ item.created_at|date:'c' }}">{{ item.created_at|date:"F d, Y" }}</time></p>
+
+      <div class="price" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+        <meta itemprop="priceCurrency" content="USD">
+        <span itemprop="price">${{ item.price }}</span>
+      </div>
+
+      <section class="description" itemprop="description">
+        <h2>Description</h2>
+        <p>{{ item.description|linebreaks }}</p>
+      </section>
+
+      <!-- Buttons -->
+      <div class="actions">
+        <button type="button" class="like-btn" data-item-id="{{ item.id }}" data-action="like">
+          <i class="fas fa-thumbs-up"></i> <span class="interaction-count">{{ item.like_count }}</span>
+        </button>
+
+        <button type="button" class="share-btn" data-item-id="{{ item.id }}" data-action="share">
+          <i class="fas fa-share-alt"></i> <span class="interaction-count">{{ item.share_count }}</span>
+        </button>
+
+        <a href="{% url 'cart:add_to_cart' 'poultryitems' 'item' item.id %}" class="btn add-cart">Add to Cart</a>
+      </div>
+
+      <!-- Seller Info -->
+      {% if item.created_by %}
+      <section class="seller-info">
+        {% if item.created_by.profile.profile_picture %}
+          <img src="{{ item.created_by.profile.profile_picture.url }}" alt="Seller photo" class="seller-avatar">
+        {% endif %}
+        <div>
+          <h3 class="seller-name">{{ item.created_by.get_full_name|default:item.created_by.username }}</h3>
+          <p class="seller-email">{{ item.created_by.email }}</p>
+        </div>
+      </section>
+
+      <div class="seller-socials">
+        {% if item.created_by.profile.telegram %}
+          <a href="https://t.me/{{ item.created_by.profile.telegram }}" target="_blank"><i class="fab fa-telegram"></i></a>
+        {% endif %}
+        {% if item.created_by.profile.facebook %}
+          <a href="https://facebook.com/{{ item.created_by.profile.facebook }}" target="_blank"><i class="fab fa-facebook"></i></a>
+        {% endif %}
+        {% if item.created_by.profile.instagram %}
+          <a href="https://instagram.com/{{ item.created_by.profile.instagram }}" target="_blank"><i class="fab fa-instagram"></i></a>
+        {% endif %}
+        {% if item.created_by.profile.linkedin %}
+          <a href="https://linkedin.com/in/{{ item.created_by.profile.linkedin }}" target="_blank"><i class="fab fa-linkedin"></i></a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'poultrys/js/item_detail.js' %}" defer></script>
+{% endblock %}

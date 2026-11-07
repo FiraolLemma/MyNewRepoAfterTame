@@ -1,0 +1,39 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans " Admin-Only | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'admin_app/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <h1>Custom Admin Dashboard</h1>
+
+  <ul class="dashboard-stats">
+    <li>Dairy Products: {{ dairy_products_count }}</li>
+    <li>Dairy Services: {{ dairy_services_count }}</li>
+    <li>Poultry Items: {{ poultry_count }}</li>
+    <li>Users: {{ users_count }}</li>
+    {% if companies_count %}
+      <li>Companies: {{ companies_count }}</li>
+    {% endif %}
+    <li>Conversations: {{ conversations_count }}</li>
+  </ul>
+
+  <nav class="dashboard-nav">
+    <a href="{% url 'admin_app:manage_clothings' %}">Manage Dairy Marketplace</a>
+    <a href="{% url 'admin_app:manage_poultry' %}">Manage Poultry</a>
+    <a href="{% url 'admin_app:manage_users' %}">Manage Users</a>
+    <a href="{% url 'admin_app:manage_conversations' %}">Manage Conversations</a>
+  </nav>
+</div>
+{% endblock %}
+
+{% block js %}
+  <script src="{% static 'admin_app/js/dashboard.js' %}"></script>
+{% endblock %}

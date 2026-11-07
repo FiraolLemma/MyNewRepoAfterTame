@@ -1,0 +1,51 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "Poultry Training Trainees | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'poultrys/css/poultry_trainings.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="training-container">
+    <div class="training-header">
+        <h1 class="training-title">Enrolled Trainees</h1>
+        <p class="training-subtitle">Here is the list of people who have enrolled in poultry training programs.</p>
+    </div>
+
+    <div class="trainee-list">
+        {% if trainees %}
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Program</th>
+                        <th>Enrollment Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trainee in trainees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ trainee.name }}</td>
+                        <td>{{ trainee.email }}</td>
+                        <td>{{ trainee.phone }}</td>
+                        <td>{{ trainee.get_program_display }}</td>
+                        <td>{{ trainee.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No trainees enrolled yet.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

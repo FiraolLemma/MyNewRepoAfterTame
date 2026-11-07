@@ -1,0 +1,102 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "Cart Details | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'cart/css/cart_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cart-container">
+    <div class="cart-header">
+        <h2>{% trans "Your Shopping Cart" %}</h2>
+    </div>
+    
+    <div class="cart-content">
+        {% if cart.items.all %}
+            <ul class="cart-items">
+                {% for item in cart.items.all %}
+                <li class="cart-item">
+                    {% if item.product.main_image %}
+                    <img src="{{ item.product.main_image.url }}" 
+                         alt="{{ item.product.name }}"
+                         class="item-image"
+                         onerror="this.src='{% static 'base/images/default-poultry.jpg' %}'">
+                    {% elif item.product.image %}
+                    <img src="{{ item.product.image.url }}" 
+                         alt="{{ item.product.name }}"
+                         class="item-image"
+                         onerror="this.src='{% static 'base/images/default-poultry.jpg' %}'">
+                    {% else %}
+                    <img src="{% static 'base/images/default-poultry.jpg' %}" 
+                         alt="{{ item.product.name }}" class="item-image">
+                    {% endif %}
+                    
+                    <div class="item-details">
+                        <h3 class="item-name">{{ item.product.name }}</h3>
+                        <p class="item-price">${{ item.product.price }}</p>
+                        <p class="item-quantity">{% trans "Quantity:" %} {{ item.quantity }}</p>
+                    </div>
+                    
+                    <div class="item-actions">
+                        <div class="quantity-controls">
+                            <button class="quantity-btn">-</button>
+                            <input type="number" class="quantity-input" value="{{ item.quantity }}" 
+                                   min="1" data-item-id="{{ item.id }}" data-old-value="{{ item.quantity }}">
+                            <button class="quantity-btn">+</button>
+                        </div>
+                        
+                        <a href="{% url 'cart:remove_from_cart' item.id %}" class="remove-btn">
+                            <i class="fas fa-trash"></i> {% trans "Remove" %}
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span class="summary-label">{% trans "Subtotal:" %}</span>
+                    <span class="summary-value">${{ cart.total_price }}</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span class="summary-label">{% trans "Shipping:" %}</span>
+                    <span class="summary-value">$0.00</span>
+                </div>
+                
+                <div class="summary-row total-row">
+                    <span class="summary-label">{% trans "Total:" %}</span>
+                    <span class="summary-value total">${{ cart.total_price }}</span>
+                </div>
+                
+                <a href="/" class="checkout-btn">
+                    <i class="fas fa-lock"></i> {% trans "Proceed to Checkout" %}
+                </a>
+                
+                <a href="{% url 'base:index' %}" class="continue-shopping">
+                    <i class="fas fa-arrow-left"></i> {% trans "Continue Shopping" %}
+                </a>
+            </div>
+        {% else %}
+            <div class="empty-cart">
+                <div class="empty-cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <p>{% trans "Your cart is empty." %}</p>
+                <a href="{% url 'base:index' %}" class="checkout-btn">
+                    <i class="fas fa-shopping-bag"></i> {% trans "Start Shopping" %}
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'cart/js/cart_detail.js' %}"></script>
+{% endblock %}

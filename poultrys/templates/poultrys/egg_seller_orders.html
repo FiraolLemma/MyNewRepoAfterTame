@@ -1,0 +1,53 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans " MY Egg Orders | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'poultrys/css/egg_seller_orders.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="orders-page">
+
+    <a href="{% url 'poultrys:egg_sellers' %}" class="back-to-home">
+            <i class="fas fa-arrow-left"></i> {% trans "Back" %}
+        </a>
+
+        
+    <h2>My Egg Orders</h2>
+    <table class="orders-table">
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Quantity</th>
+                <th>Total Price</th>
+                <th>Date</th>
+            </tr> 
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.customer_name }}</td>
+                <td>{{ order.customer_email }}</td>
+                <td>{{ order.customer_phone }}</td>
+                <td>{{ order.quantity }}</td>
+                <td>{{ order.total_price }}</td>
+                <td>{{ order.order_date|date:"M d, Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">No orders yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'poultrys/js/egg_seller_orders.js' %}"></script>
+{% endblock %}

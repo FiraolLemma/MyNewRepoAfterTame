@@ -1,0 +1,135 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Django
+*.log
+*.pot
+*.pyc
+local_settings.py
+
+# Dockerfile
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+docker-compose.override.*.yml
+
+
+# Static and compiled files
+
+# Node.js
+node_modules/
+*.tsbuildinfo
+
+# VS Code
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment and config
+.env
+.env.*
+*.env
+.secret
+.hintrc
+
+# Railway-specific
+.railwayignore
+
+# Git
+*.swp
+*.swo
+*.bak
+*~
+
+# Backup and metadata
+*.orig
+*.tmp
+
+# Notes and docs
+notes.md
+
+# all files
+Procfile
+requirements.txt
+manage.py
+users
+base
+companies
+contact
+media
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Django
+*.log
+*.pot
+*.pyc
+local_settings.py
+db.sqlite3
+
+# Dockerfile
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+docker-compose.override.*.yml
+
+
+# Static and compiled files
+
+# Node.js
+node_modules/
+*.tsbuildinfo
+
+# VS Code
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment and config
+.env
+.env.*
+*.env
+.secret
+.hintrc
+
+# Railway-specific
+.railwayignore
+
+# Git
+*.swp
+*.swo
+*.bak
+*~
+
+# Backup and metadata
+*.orig
+*.tmp
+
+# Notes and docs
+notes.md

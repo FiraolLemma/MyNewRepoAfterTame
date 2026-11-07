@@ -1,0 +1,197 @@
+<!-- poultrys/veterinary_consultancy.html -->
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "Veterinary Consultancy | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'poultrys/css/veterinary_consultancy.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="veterinary-consultancy">
+    
+    <a href="{% url 'poultrys:index' %}" class="back-to-home">
+            <i class="fas fa-arrow-left"></i> {% trans "Back" %}
+        </a>
+
+    <div id="consultants" class="consultants-list">
+        <h2>{% trans "Our Expert Consultants" %}</h2>
+        
+        {% if consultants %}
+        <ul id="consultantList" class="consultant-items">
+            {% for consultant in consultants %}
+            <li class="consultant-item" data-specialty="{{ consultant.specialty }}" data-availability="{{ consultant.availability }}">
+                <div class="consultant-header">
+                    <div class="consultant-info">
+                        <div class="consultant-name">{{ consultant.name }}</div>
+                    </div>
+                </div>
+                <div class="consultant-details">
+                    <p><strong>{% trans "Experience:" %}</strong> {{ consultant.experience }}+ {% trans "years" %}</p>
+                    <p><strong>{% trans "Specialty:" %}</strong> {{ consultant.get_specialty_display }}</p>
+                    <p><strong>{% trans "Languages:" %}</strong> {{ consultant.languages }}</p>
+                    <p><strong>{% trans "Rating:" %}</strong> 
+                        <span class="rating">
+                            {% with ''|center:5 as range %}
+                            {% for i in range %}
+                                {% if forloop.counter <= consultant.rating|floatformat:0 %}
+                                    ★
+                                {% else %}
+                                    ☆
+                                {% endif %}
+                            {% endfor %}
+                            {% endwith %}
+                            <span class="rating-count">({{ consultant.rating_count }})</span>
+                        </span>
+                    </p>
+                </div>
+                <div class="dropdown">
+                    <p class="description">{{ consultant.description }}</p>
+                    
+                    {% if consultant.services.all %}
+                    <div class="consultation-options">
+                        <h4>{% trans "Consultation Options" %}</h4>
+                        <div class="option-grid">
+                            {% for service in consultant.services.all %}
+                            <div class="consultation-option">
+                                <span class="option-type">{{ service.get_service_type_display }}</span>
+                                <span class="option-price">${{ service.price }}/{% trans service.duration|default:"hour" %}</span>
+                                <button class="book-btn" 
+                                        data-consultant-id="{{ consultant.id }}"
+                                        data-consultant-name="{{ consultant.name }}"
+                                        data-service-id="{{ service.id }}"
+                                        data-service-type="{{ service.get_service_type_display }}"
+                                        data-service-price="{{ service.price }}">
+                                    {% if service.service_type == 'visit' or service.service_type == 'assessment' %}
+                                        {% trans "Request" %} {{ service.get_service_type_display }}
+                                    {% else %}
+                                        {% trans "Book Now" %}
+                                    {% endif %}
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="availability">
+                        <h4>{% trans "Availability" %}</h4>
+                        <div class="availability-slots">
+                            {% if consultant.availability == 'weekdays' %}
+                                <span class="time-slot">{% trans "Weekdays: Available" %}</span>
+                            {% elif consultant.availability == 'weekends' %}
+                                <span class="time-slot">{% trans "Weekends: Available" %}</span>
+                            {% elif consultant.availability == 'all_week' %}
+                                <span class="time-slot">{% trans "Mon-Fri: 9AM-6PM" %}</span>
+                                <span class="time-slot">{% trans "Sat: 10AM-4PM" %}</span>
+                            {% elif consultant.availability == 'emergency' %}
+                                <span class="time-slot">{% trans "Mon-Fri: 9AM-6PM" %}</span>
+                                <span class="time-slot">{% trans "Sat: 10AM-4PM" %}</span>
+                                <span class="time-slot emergency">{% trans "Emergency: 24/7" %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="social-links">
+                        {% if consultant.facebook %}
+                        <a href="{{ consultant.facebook }}" class="social-link" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                        {% endif %}
+                        {% if consultant.linkedin %}
+                        <a href="{{ consultant.linkedin }}" class="social-link" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        {% endif %}
+                        {% if consultant.email %}
+                        <a href="mailto:{{ consultant.email }}" class="social-link"><i class="far fa-envelope"></i></a>
+                        {% endif %}
+                        {% if consultant.whatsapp %}
+                        <a href="https://wa.me/{{ consultant.whatsapp }}" class="social-link" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="no-consultants">
+            <p>{% trans "No consultants available at the moment. Please check back later." %}</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>{% trans "Book Consultation" %}</h3>
+            <form id="bookingForm" action="{% url 'poultrys:book_consultation' %}">
+                {% csrf_token %}
+                <input type="hidden" id="consultantId" name="consultant_id">
+                <input type="hidden" id="serviceId" name="service_id">
+                
+                <div class="form-group">
+                    <label for="consultantName">{% trans "Consultant:" %}</label>
+                    <input type="text" id="consultantName" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="serviceType">{% trans "Service Type:" %}</label>
+                    <input type="text" id="serviceType" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="servicePrice">{% trans "Price:" %}</label>
+                    <input type="text" id="servicePrice" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="userName">{% trans "Your Name:" %}</label>
+                    <input type="text" id="userName" name="user_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">{% trans "Email:" %}</label>
+                    <input type="email" id="userEmail" name="user_email" required>
+                </div>
+                <div class="form-group">
+                    <label for="userPhone">{% trans "Phone:" %}</label>
+                    <input type="tel" id="userPhone" name="user_phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="consultationDate">{% trans "Preferred Date:" %}</label>
+                    <input type="date" id="consultationDate" name="preferred_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="consultationTime">{% trans "Preferred Time:" %}</label>
+                    <input type="time" id="consultationTime" name="preferred_time" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">{% trans "Message:" %}</label>
+                    <textarea id="message" name="message" rows="4" placeholder="{% trans 'Briefly describe your issue or questions...' %}"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">{% trans "Request Consultation" %}</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'poultrys/js/veterinary_consultancy.js' %}"></script>
+<script>
+// CSRF token setup for AJAX
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+</script>
+{% endblock %}

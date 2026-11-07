@@ -1,0 +1,496 @@
+.poultry-container {
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 0 0.5rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #222;
+    background-color: rgb(235, 235, 235);
+}
+
+.list-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.add-poultry-btn {
+    background: #e67e22;
+    color: rgb(240, 240, 240);
+    padding: 0.3rem 1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    box-shadow: 0 8px 16px rgba(230, 126, 34, 0.6);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-poultry-btn:hover,
+.add-poultry-btn:focus {
+    background: #d35400;
+    box-shadow: 0 6px 12px rgba(211, 84, 0, 0.75);
+    outline: none;
+    color: white;
+}
+
+.poultry-listings {
+    display: flex;
+    flex-direction: column;
+}
+
+.poultry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+    gap: 1.5rem;
+}
+
+.poultry-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.poultry-card:hover,
+.poultry-card:focus-within {
+    transform: translateY(5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-bottom: 1px solid #e67e22;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.poultry-card:hover .card-image img {
+    transform: scale(1.05);
+}
+
+.carted-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.486);
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #888;
+    font-size: 18px;
+    cursor: default;
+    box-shadow: 0 0 8px rgb(255, 255, 255);
+    transition: color 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    z-index: 5;
+}
+.carted-badge.carted {
+    color: #ffda36;
+    animation: pulseCart 1.5s infinite ease-in-out;
+    box-shadow: 0 0 12px 3px #e67e22aa;
+}
+
+@keyframes pulseCart {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 12px 3px #d35400;
+    }
+    50% {
+        transform: scale(1.2);
+        box-shadow: 0 0 18px 6px #e67e22;
+    }
+}
+
+.interaction-buttons {
+    position: absolute;
+    bottom: 0.25rem;
+    right: 0.25rem;
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+}
+
+.interaction-button {
+    background: rgba(255,255,255,0.85);
+    border: none;
+    padding: 3px 5px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #555;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.interaction-button:hover,
+.interaction-button:focus {
+    background: #e67e22;
+    color: white;
+    outline: none;
+}
+
+.interaction-count {
+    font-weight: 600;
+}
+
+.card-content {
+    padding: 0.4rem 1.1rem 0.2rem 1.1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.poultry-meta {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.poultry-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.poultry-meta i {
+    color: #888;
+}
+
+h3 {
+    margin: 0 0 0 0;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #222;
+}
+
+.poultry-specs {
+    display: flex;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+    color: #444;
+    margin-bottom: 0;
+}
+
+.poultry-specs i {
+    color: #666;
+}
+
+.poultry-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #e67e22;
+    margin-bottom: 0.5rem;
+}
+
+.view-details {
+    color: #e67e22;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    position: relative;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.fraol {
+    background: #e67e22;
+    color: rgba(236, 236, 236, 0.952);
+    padding: 0.2rem 0.7rem;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    box-shadow: 2px 5px 10px rgba(230, 126, 34, 0.87);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.fraol:hover,
+.fraol:focus {
+    background: #d35400;
+    box-shadow: 3px 8px 12px rgba(211, 84, 0, 0.986);
+    outline: none;
+    color: white;
+}
+
+.view-details::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 0%;
+    height: 2px;
+    background-color: #e67e22;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.view-details:hover,
+.view-details:focus {
+    color: #d35400;
+    outline: none;
+}
+
+.view-details:hover::after,
+.view-details:focus::after {
+    width: 100%;
+}
+
+.view-details i {
+    transition: transform 0.3s ease;
+}
+
+.view-details:hover i,
+.view-details:focus i {
+    transform: translateX(5px);
+}
+
+.card-actions {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.edit-btn, .delete-btn {
+    color: #555;
+    font-size: 1.1rem;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.edit-btn:hover,
+.edit-btn:focus {
+    background-color: #ffc107;
+    color: #212529;
+    outline: none;
+}
+
+.delete-btn:hover,
+.delete-btn:focus {
+    background-color: #dc3545;
+    color: white;
+    outline: none;
+}
+
+.no-results {
+    text-align: center;
+    color: #888;
+    margin-top: 4rem;
+    font-size: 1.3rem;
+}
+
+.no-results i {
+    font-size: 3rem;
+    margin-bottom: 0.6rem;
+    color: #ccc;
+}
+
+.pagination {
+    margin-top: 2rem;
+    text-align: center;
+    user-select: none;
+}
+
+.page-link, .current-page {
+    margin: 0 0.25rem;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    user-select: none;
+    display: inline-block;
+    min-width: 36px;
+    transition: background-color 0.25s ease;
+}
+
+.page-link {
+    color: #e67e22;
+    border: 1px solid transparent;
+}
+
+.page-link:hover,
+.page-link:focus {
+    background-color: #e67e22;
+    color: white;
+    outline: none;
+}
+
+.current-page {
+    background-color: #e67e22;
+    color: white;
+    border: 1px solid #d35400;
+    cursor: default;
+}
+
+.poultry-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(1, 1fr);
+}
+
+@media (max-width: 320px) {
+  .poultry-grid {grid-template-columns: repeat(1, 1fr);}
+}
+@media (min-width: 321px) and (max-width: 350px) {
+  .poultry-grid {grid-template-columns: repeat(1, 1fr);}
+}
+@media (min-width: 351px) and (max-width: 570px) {
+  .poultry-grid {grid-template-columns: repeat(2, 1fr);}
+}
+@media (min-width: 571px) and (max-width: 870px) {
+  .poultry-grid {grid-template-columns: repeat(3, 1fr);}
+}
+@media (min-width: 871px) and (max-width: 1200px) {
+  .poultry-grid {grid-template-columns: repeat(4, 1fr);}
+}
+@media (min-width: 1201px) and (max-width: 1399px) {
+  .poultry-grid {grid-template-columns: repeat(5, 1fr);}
+}
+@media (min-width: 1400px) {
+  .poultry-grid {grid-template-columns: repeat(6, 1fr);}
+}
+
+.poultry-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.poultry-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 20px rgb(0 0 0 / 0.15);
+}
+.interaction-button.liked {
+    border-color: var(--primary);
+    background: #02fce7ff;
+    color: red;
+}
+
+.interaction-button.liked {
+    color: #3b5998;
+    border-color: #3b5998;
+}
+
+.interaction-button.liked i {
+    color: #3b5998;
+}
+
+.interaction-button {
+    transition: all 0.3s ease;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+.interaction-button:hover {
+    background: #f8f9fa;
+}
+
+.interaction-button.active {
+    transform: scale(0.95);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.back-to-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background-color: #f8f9fa;
+    color: #333;
+    text-decoration: none;
+    border-radius: 10px;
+    border: 1px solid #cfcfcf;
+    transition: all 0.3s ease;
+}
+
+.back-to-home:hover {
+    background-color: #f8bc6d;
+    text-decoration: none;
+    border: 1px solid #87dfeb;
+    color: #007bff;
+}

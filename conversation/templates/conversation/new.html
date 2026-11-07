@@ -1,0 +1,81 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "Start New Message | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'conversation/css/new.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="new-conversation-container">
+  <div class="conversation-header">
+    <h1>{% trans "New Message" %}</h1>
+    <p>{% trans "Contact the seller about:" %} 
+      <strong>{{ item.name }}</strong>
+      {% if item.get_absolute_url %}
+        <a href="{{ item.get_absolute_url }}" class="view-item-link">
+          <i class="fas fa-external-link-alt"></i> {% trans "View Item" %}
+        </a>
+      {% endif %}
+    </p>
+  </div>
+
+  {% if form.errors %}
+  <div class="form-errors">
+    {% for field, errors in form.errors.items %}
+      {% for error in errors %}
+      <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        {{ error }}
+      </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form method="post" class="conversation-form" id="new-conversation-form">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="{{ form.content.id_for_label }}">{% trans "Your Message" %}</label>
+      {{ form.content }}
+      {% if form.content.help_text %}
+      <small class="form-help">{{ form.content.help_text }}</small>
+      {% endif %}
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="submit-button">
+        <i class="fas fa-paper-plane"></i> {% trans "Send Message" %}
+      </button>
+      {% if item.get_absolute_url %}
+        <a href="{{ item.get_absolute_url }}" class="cancel-button">{% trans "Back to Item" %}</a>
+      {% else %}
+        <a href="/" class="cancel-button">{% trans "Cancel" %}</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<script>
+  document.getElementById('new-conversation-form').addEventListener('submit', function(e) {
+    const submitButton = this.querySelector('button[type="submit"]');
+    const content = this.querySelector('textarea[name="content"]').value.trim();
+    
+    if (!content) {
+      e.preventDefault();
+      alert('{% trans "Please enter a message" %}');
+      return;
+    }
+    
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {% trans "Sending..." %}';
+  });
+</script>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'conversation/js/new.js' %}"></script>
+{% endblock %}

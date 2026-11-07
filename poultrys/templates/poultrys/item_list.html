@@ -1,0 +1,129 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "Poultry Items List | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'poultrys/css/item_list.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="poultry-container">
+
+    <a href="{% url 'poultrys:index' %}" class="back-to-home">
+            <i class="fas fa-arrow-left"></i> {% trans "Back" %}
+        </a>
+        
+    <div class="list-header">
+            <a href="{% url 'poultrys:item_create' %}"  class="add-poultry-btn">
+                <i class="fas fa-plus"></i> {% trans "Sell Item" %}
+            </a>
+    </div> 
+    
+<main class="poultry-listings">
+        <div class="poultry-grid">
+ 
+            {% for item in object_list %}
+            <div class="poultry-card" data-category="{{ item.category.slug }}" data-price="{{ item.price }}">
+
+                <div class="card-image">
+            <img src="{{ item.main_image.url }}" alt="{{ item.name }}" loading="lazy">
+            <span class="carted-badge {% if item.is_carted %}carted{% endif %}">
+                <i class="fas fa-shopping-cart"></i>
+            </span>
+    
+            <!-- In both item_list.html and item_detail.html -->
+<div class="interaction-buttons">
+    <button type="button"
+            class="interaction-button like-button {% if item.has_liked %}liked{% endif %}"
+            aria-label="Like this item"
+            data-item-id="{{ item.id }}"
+            data-action="like">
+        <i class="fas fa-thumbs-up"></i>
+        <span class="interaction-count">{{ item.like_count }}</span>
+    </button>
+
+    <button type="button" 
+            class="interaction-button share-button"
+            aria-label="Share this item"
+            data-item-id="{{ item.id }}"
+            data-action="share"> 
+        <i class="fas fa-share-alt" aria-hidden="true"></i> 
+        <span class="interaction-count">{{ item.share_count }}</span>
+    </button>
+</div>
+         </div>
+                
+                <div class="card-content">
+                    <div class="poultry-meta">
+                        <span class="poultry-category">{{ item.category.name|default:"Poultry" }}</span>
+                        <span class="poultry-time"><i class="fas fa-clock"></i> {{ item.created_at|timesince }} ago</span>
+                    </div>
+
+                    <h3>{{ item.name }}</h3>
+                    <div class="poultry-price">
+                        <span class="price">ETB {{ item.price|floatformat:"0" }}</span>
+                    </div>
+                    <a href="{% url 'poultrys:item_detail' item.pk %}" class="view-details">
+                        <div class="fraol">
+                        {% trans "View Details" %} <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
+                    <div class="card-actions">
+    <a href="{% url 'poultrys:item_edit' item.pk %}" class="edit-btn" title="Edit">
+        <i class="fas fa-edit"></i>
+    </a>
+    <form action="{% url 'poultrys:item_delete' item.pk %}" method="POST" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="delete-btn" title="Delete">
+        <i class="fas fa-trash"></i>
+    </button>
+</form>
+
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-results">
+                <i class="fas fa-egg"></i>
+                <h3>{% trans "No poultry items available yet" %}</h3>
+                <p>{% trans "Please login to add items" %}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="page-link">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="current-page">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="page-link">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+</main>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'poultrys/js/item_list.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Remove dairy product" %}{% endblock %}
+{% block content %}
+<main class="dairy-market container">
+    <section class="dairy-form-panel">
+        <h1>{% trans "Remove dairy product" %}</h1>
+        <p>{% blocktrans with name=product.name %}Are you sure you want to remove “{{ name }}”?{% endblocktrans %}</p>
+        <form method="post">
+            {% csrf_token %}
+            <button class="dairy-button dairy-button--danger" type="submit">{% trans "Remove product" %}</button>
+            <a class="dairy-button dairy-button--light" href="{{ product.get_absolute_url }}">{% trans "Cancel" %}</a>
+        </form>
+    </section>
+</main>
+{% endblock %}

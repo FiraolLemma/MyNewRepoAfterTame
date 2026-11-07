@@ -1,0 +1,34 @@
+{% extends "base/base.html" %}
+
+{% block title %}Manage Conversations{% endblock %}
+
+{% block content %}
+<h1>Manage Conversations</h1>
+
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Conversation ID</th>
+            <th>Members</th>
+            <th>Created At</th>
+            <th>Modified At</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for convo in conversations %}
+        <tr>
+            <td>{{ convo.id }}</td>
+            <td>
+                {% for member in convo.members.all %}
+                    {{ member.username }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td>{{ convo.created_at }}</td>
+            <td>{{ convo.modified_at }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">No conversations found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

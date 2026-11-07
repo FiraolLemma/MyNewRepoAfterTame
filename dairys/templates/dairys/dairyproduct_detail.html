@@ -1,0 +1,31 @@
+{% extends "base/base.html" %}
+{% load i18n static %}
+
+{% block title %}{{ product.name }} | {% trans "Dairy Marketplace" %}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'dairys/css/dairy_market.css' %}">{% endblock %}
+
+{% block content %}
+<main class="dairy-market container">
+    <p class="dairy-market__eyebrow"><a href="{% url 'clothings:clothing_list' %}">{% trans "Dairy marketplace" %}</a> / {{ product.category.name }}</p>
+    <article class="dairy-detail">
+        <div class="dairy-detail__image">
+            {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<span class="dairy-card__placeholder" aria-hidden="true"><i class="fas fa-bottle-water"></i></span>{% endif %}
+        </div>
+        <div class="dairy-detail__content">
+            <p class="dairy-card__meta">{{ product.category.name }} · {{ product.location }}</p>
+            <h1>{{ product.name }}</h1>
+            <p class="dairy-detail__price">ETB {{ product.price }} / {{ product.get_unit_display }}</p>
+            <p>{{ product.description|linebreaksbr }}</p>
+            <p><strong>{% trans "Available" %}:</strong> {{ product.quantity_available }}</p>
+            <p><strong>{% trans "Farm or supplier" %}:</strong> {{ product.created_by.get_full_name|default:product.created_by.username }}</p>
+            <a class="dairy-button" href="{% url 'conversation:new' 'clothings' 'dairyproduct' product.pk %}">{% trans "Contact seller" %}</a>
+            {% if user == product.created_by or user.is_superuser %}
+            <div class="dairy-market__actions">
+                <a class="dairy-button dairy-button--light" href="{% url 'clothings:clothing_update' product.slug %}">{% trans "Edit listing" %}</a>
+                <a class="dairy-button dairy-button--danger" href="{% url 'clothings:clothing_delete' product.slug %}">{% trans "Remove listing" %}</a>
+            </div>
+            {% endif %}
+        </div>
+    </article>
+</main>
+{% endblock %}

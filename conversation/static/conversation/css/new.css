@@ -1,0 +1,127 @@
+/* Add these styles to your conversation/css/new.css */
+.new-conversation-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: linear-gradient(rgb(76, 231, 15), rgb(223, 248, 1), rgb(255, 251, 0), red);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.conversation-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.conversation-header h1 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.conversation-header p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+.view-item-link {
+  margin-left: 10px;
+  color: #3498db;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.view-item-link:hover {
+  text-decoration: underline;
+}
+
+.conversation-form {
+  margin-top: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.form-group textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.submit-button {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2980b9, #1c6ea4);
+  transform: translateY(-2px);
+}
+
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  color: #7f8c8d;
+  text-decoration: none;
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.cancel-button:hover {
+  background: #f8f9fa;
+  border-color: #bbb;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .new-conversation-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .submit-button,
+  .cancel-button {
+    width: 100%;
+    text-align: center;
+  }
+}

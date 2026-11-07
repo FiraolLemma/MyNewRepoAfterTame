@@ -1,0 +1,285 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans " My Conversation Detail | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'conversation/css/detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="conversation-container" 
+     data-conversation-id="{{ conversation.id }}"
+     data-current-user="{{ request.user.username }}"
+     data-user-id="{{ request.user.id }}">
+  <div class="conversation-header">
+    <h1>{% trans "Conversation about" %}
+      <a href="{{ conversation.item.get_absolute_url }}">
+        {{ conversation.item.name }}
+      </a>
+    </h1>
+    <div class="participants">
+      {% for member in conversation.members.all %}
+        {% if member != request.user %}
+          <span class="participant-badge">
+            <i class="fas fa-user"></i> {{ member.username }}
+          </span>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  
+  <div class="conversation-messages" id="messages-container">
+    {% for message in conversation.messages.all %}
+    <div class="message {% if message.created_by == request.user %}sent{% else %}received{% endif %}" 
+         data-message-id="{{ message.id }}"
+         data-created-at="{{ message.created_at|date:'c' }}">
+      <div class="message-meta">
+        <span class="sender">{{ message.created_by.username }}</span>
+        <span class="timestamp">{{ message.created_at|date:"M d, Y H:i" }}</span>
+        {% if message.created_by == request.user and message.is_read %}
+        <span class="read-receipt" title="Read">
+          <i class="fas fa-check-double"></i>
+        </span>
+        {% endif %}
+      </div>
+      <div class="message-content">{{ message.content }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <form method="post" class="message-form" id="message-form">
+    {% csrf_token %}
+    <div class="form-group">
+      {{ form.content }}
+      <div class="form-actions">
+        <button type="submit" class="send-button" id="send-button">
+          <i class="fas fa-paper-plane"></i> {% trans "Send" %}
+        </button>
+        <div class="typing-indicator" id="typing-indicator" style="display: none;">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+class ConversationManager {
+    constructor(conversationId, currentUser, userId) {
+        this.conversationId = conversationId;
+        this.currentUser = currentUser;
+        this.userId = userId;
+        this.socket = null;
+        this.retryCount = 0;
+        this.maxRetries = 3;
+        this.typingTimeout = null;
+        this.initialize();
+    }
+
+    initialize() {
+        const wsScheme = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        this.socket = new WebSocket(
+            `${wsScheme}${window.location.host}/ws/conversation/${this.conversationId}/`
+        );
+
+        this.socket.onopen = () => {
+            console.log('WebSocket connection established');
+            this.retryCount = 0;
+            this.setupEventListeners();
+            this.markMessagesAsRead();
+        };
+
+        this.socket.onmessage = (e) => {
+            try {
+                const data = JSON.parse(e.data);
+                switch(data.type) {
+                    case 'chat':
+                        this.appendMessage(data);
+                        break;
+                    case 'unread_update':
+                        this.handleUnreadUpdate(data);
+                        break;
+                    case 'typing':
+                        this.showTypingIndicator(data.sender);
+                        break;
+                    case 'read_receipt':
+                        this.updateReadReceipts(data.message_id);
+                        break;
+                }
+            } catch (error) {
+                console.error('Error parsing message:', error);
+            }
+        };
+
+        this.socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        this.socket.onclose = (e) => {
+            console.log(`Connection closed: ${e.code} - ${e.reason}`);
+            if (this.retryCount < this.maxRetries) {
+                this.retryCount++;
+                setTimeout(() => this.initialize(), 3000);
+            }
+        };
+    }
+
+    setupEventListeners() {
+        const form = document.getElementById('message-form');
+        const input = form.querySelector('textarea[name="content"]');
+        const sendButton = document.getElementById('send-button');
+
+        // Form submission
+        form.addEventListener('submit', (e) => this.handleSubmit(e));
+
+        // Typing indicator
+        input.addEventListener('input', () => {
+            this.sendTypingIndicator();
+            this.resetTypingTimeout();
+        });
+
+        // Prevent form submission on Enter (use Ctrl+Enter instead)
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.ctrlKey) {
+                e.preventDefault();
+            } else if (e.key === 'Enter' && e.ctrlKey) {
+                this.handleSubmit(e);
+            }
+        });
+    }
+
+    handleSubmit(e) {
+        e.preventDefault();
+        const input = document.querySelector('#message-form textarea[name="content"]');
+        const message = input.value.trim();
+        const sendButton = document.getElementById('send-button');
+        
+        if (message && this.socket.readyState === WebSocket.OPEN) {
+            // Disable button during send
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending';
+
+            this.socket.send(JSON.stringify({
+                type: 'chat',
+                message: message,
+                sender: this.currentUser,
+                user_id: this.userId
+            }));
+
+            // Clear input but keep focus
+            input.value = '';
+            input.focus();
+            sendButton.disabled = false;
+            sendButton.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
+        }
+    }
+
+    appendMessage(data) {
+        const container = document.getElementById('messages-container');
+        if (!container) return;
+
+        // Check if message already exists
+        if (document.querySelector(`[data-message-id="${data.message_id}"]`)) {
+            return;
+        }
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${data.user_id == this.userId ? 'sent' : 'received'}`;
+        messageDiv.dataset.messageId = data.message_id;
+        messageDiv.dataset.createdAt = data.timestamp;
+
+        messageDiv.innerHTML = `
+            <div class="message-meta">
+                <span class="sender">${data.sender}</span>
+                <span class="timestamp">${new Date(data.timestamp).toLocaleString()}</span>
+                ${data.user_id == this.userId ? '<span class="read-receipt"><i class="fas fa-check-double"></i></span>' : ''}
+            </div>
+            <div class="message-content">${data.message}</div>
+        `;
+        
+        container.appendChild(messageDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    sendTypingIndicator() {
+        if (this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify({
+                type: 'typing',
+                sender: this.currentUser,
+                user_id: this.userId
+            }));
+        }
+    }
+
+    resetTypingTimeout() {
+        if (this.typingTimeout) clearTimeout(this.typingTimeout);
+        this.typingTimeout = setTimeout(() => {
+            document.getElementById('typing-indicator').style.display = 'none';
+        }, 3000);
+    }
+
+    showTypingIndicator(sender) {
+        if (sender !== this.currentUser) {
+            const indicator = document.getElementById('typing-indicator');
+            indicator.style.display = 'flex';
+            this.resetTypingTimeout();
+        }
+    }
+
+    markMessagesAsRead() {
+        if (this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify({
+                type: 'mark_read',
+                conversation_id: this.conversationId,
+                user_id: this.userId
+            }));
+        }
+    }
+
+    updateReadReceipts(messageId) {
+        const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (messageDiv) {
+            const receipt = messageDiv.querySelector('.read-receipt');
+            if (receipt) {
+                receipt.innerHTML = '<i class="fas fa-check-double" title="Read"></i>';
+            }
+        }
+    }
+
+    handleUnreadUpdate(data) {
+        const navbarBadge = document.getElementById('navbarUnread');
+        if (navbarBadge) {
+            navbarBadge.textContent = data.count;
+            navbarBadge.style.display = data.count > 0 ? 'flex' : 'none';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('.conversation-container');
+    if (container) {
+        new ConversationManager(
+            container.dataset.conversationId,
+            container.dataset.currentUser,
+            container.dataset.userId
+        );
+        
+        // Scroll to bottom on load
+        const messagesContainer = document.getElementById('messages-container');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
+});
+</script>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'conversation/js/detail.js' %}"></script>
+{% endblock %}

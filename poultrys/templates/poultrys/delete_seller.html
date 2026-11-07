@@ -1,0 +1,26 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans " Delete Chicken Seller | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <div class="confirmation-card">
+        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #e74c3c; margin-bottom: 20px;"></i>
+        <h2>{% trans "Delete Seller Profile" %}</h2>
+        <p>{% trans "Are you sure you want to delete" %} <strong>{{ seller.farm_name }}</strong>?</p>
+        <p class="warning">{% trans "This action cannot be undone." %}</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="confirmation-actions">
+                <button type="submit" class="btn-danger">{% trans "Yes, Delete" %}</button>
+                <a href="{% url 'poultrys:chicken_sellers_list' %}" class="btn-secondary">{% trans "Cancel" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

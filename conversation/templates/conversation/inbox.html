@@ -1,0 +1,112 @@
+{% extends 'base/base.html' %}
+{% csrf_token %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans " My Inbox | Ethiopian Sheger Market place" %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'conversation/css/inbox.css' %}">
+{% endblock %}
+
+{% block content %}
+{% load conversation_filters %}
+
+<div class="inbox-container">
+  <h1 class="inbox-heading">{% trans "Your Conversations" %}</h1>
+
+  <div class="conversation-list">
+    {% for conversation in conversations %}
+    <a href="{% url 'conversation:detail' conversation.id %}" 
+       class="conversation-link" 
+       data-conversation-id="{{ conversation.id }}"
+       aria-label="Conversation about {{ conversation.item.name }}">
+      <div class="conversation-card {% if unread_counts|get_unread_count:conversation.id > 0 %}unread{% endif %}">
+
+
+{% load conversation_filters %}
+<div class="conversation-image">
+    {% with image_url=conversation.item|get_item_image_url %}
+        <!-- DEBUG: Remove this after testing -->
+        <div style="display: none;">
+            Image URL: {{ image_url|default:"No image found" }}<br>
+            Item type: {{ conversation.item|get_item_name }}<br>
+            
+        </div>
+        
+        {% if image_url %}
+            <img src="{{ image_url }}" 
+                 alt="{{ conversation.item|get_item_name }}" 
+                 loading="lazy"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div class="no-image" style="display: none;">{% trans "No Image" %}</div>
+        {% else %}
+            <div class="no-image">{% trans "No Image" %}</div>
+        {% endif %}
+    {% endwith %}
+    
+    {% for member in conversation.members.all %}
+        {% if member != request.user and member.profile.is_online %}
+        <span class="online-status" title="Online now"></span>
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+        <div class="conversation-info">
+          {% for member in conversation.members.all %}
+            {% if member != request.user %}
+            <div class="conversation-header">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <h3 class="conversation-username">{{ member.username }}</h3>
+                <span class="unread-count" id="unread-{{ conversation.id }}" 
+                      style="{% if unread_counts|get_unread_count:conversation.id == 0 %}display: none;{% endif %}">
+                  {{ unread_counts|get_unread_count:conversation.id }}
+                </span>
+              </div>
+              <span class="time">{{ conversation.modified_at|timesince }} ago</span>
+            </div>
+            <p class="item-name">{{ conversation.item.name }}</p>
+            <p class="last-message" title="{% if conversation.messages.last %}{{ conversation.messages.last.content }}{% endif %}">
+              {% if conversation.is_typing %}
+              <span class="typing-indicator">
+                <span>{% trans "typing" %}</span>
+                <span class="typing-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              </span>
+              {% elif conversation.messages.last %}
+                {{ conversation.messages.last.content|truncatechars:50 }}
+              {% else %}
+                {% trans "No messages yet" %}
+              {% endif %}
+            </p>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </a>
+    {% empty %}
+    <div class="empty-inbox">
+      <p>{% trans "No conversations yet" %}</p>
+      <a href="{% url 'base:index' %}" class="browse-button">{% trans "Browse Items" %}</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    const USER_ID = {{ request.user.id|default:"null" }};
+    const CSRF_TOKEN = "{{ csrf_token }}";
+    const MARK_AS_READ_URL = "{% url 'conversation:mark_all_read' %}";
+    const UNREAD_API_URL = "{% url 'conversation:unread_count_api' %}";
+</script>
+<script src="{% static 'conversation/js/inbox.js' %}"></script>
+{% endblock %}

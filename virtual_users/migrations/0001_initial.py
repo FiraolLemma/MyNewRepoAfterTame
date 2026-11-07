@@ -1,0 +1,73 @@
+import django.db.models.deletion
+from django.conf import settings
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+    initial = True
+
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('poultryitems', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='VirtualAgent',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('role', models.CharField(choices=[('farmer', 'Farmer'), ('poultry_business', 'Poultry business'), ('supplier', 'Supplier'), ('service_provider', 'Service provider')], max_length=30)),
+                ('persona_label', models.CharField(max_length=100)),
+                ('persona', models.JSONField(default=dict)),
+                ('is_enabled', models.BooleanField(default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('last_simulated_at', models.DateTimeField(blank=True, null=True)),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='virtual_agent', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ('user__username',),
+            },
+        ),
+        migrations.CreateModel(
+            name='VirtualService',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=150)),
+                ('description', models.TextField()),
+                ('price', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
+                ('is_available', models.BooleanField(default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('agent', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='services', to='virtual_users.virtualagent')),
+            ],
+            options={
+                'ordering': ('agent__user__username', 'name'),
+            },
+        ),
+        migrations.CreateModel(
+            name='ActivityHistory',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('event_key', models.CharField(max_length=100)),
+                ('action', models.CharField(max_length=50)),
+                ('summary', models.CharField(max_length=250)),
+                ('metadata', models.JSONField(blank=True, default=dict)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('agent', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='activity_history', to='virtual_users.virtualagent')),
+            ],
+            options={
+                'ordering': ('-created_at',),
+            },
+        ),
+        migrations.AddConstraint(
+            model_name='virtualservice',
+            constraint=models.UniqueConstraint(fields=('agent', 'name'), name='unique_virtual_service_per_agent'),
+        ),
+        migrations.AddConstraint(
+            model_name='activityhistory',
+            constraint=models.UniqueConstraint(fields=('agent', 'event_key'), name='unique_virtual_activity_event'),
+        ),
+        migrations.AddIndex(
+            model_name='activityhistory',
+            index=models.Index(fields=['agent', '-created_at'], name='virtual_act_agent_date'),
+        ),
+    ]

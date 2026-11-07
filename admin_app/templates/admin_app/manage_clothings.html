@@ -1,0 +1,66 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Manage Dairy Marketplace" %}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <h1>{% trans "Dairy Products" %}</h1>
+  <table border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th>{% trans "Name" %}</th>
+        <th>{% trans "Category" %}</th>
+        <th>{% trans "Price" %}</th>
+        <th>{% trans "Unit" %}</th>
+        <th>{% trans "Available" %}</th>
+        <th>{% trans "Location" %}</th>
+        <th>{% trans "Seller" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in dairy_products %}
+      <tr>
+        <td>{{ product.name }}</td>
+        <td>{{ product.category.name }}</td>
+        <td>ETB {{ product.price }}</td>
+        <td>{{ product.get_unit_display }}</td>
+        <td>{{ product.quantity_available }}</td>
+        <td>{{ product.location }}</td>
+        <td>{{ product.created_by.username }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">{% trans "No dairy products available." %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>{% trans "Dairy Services" %}</h2>
+  <table border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th>{% trans "Service" %}</th>
+        <th>{% trans "Type" %}</th>
+        <th>{% trans "Provider" %}</th>
+        <th>{% trans "Location" %}</th>
+        <th>{% trans "Price" %}</th>
+        <th>{% trans "Available" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for service in dairy_services %}
+      <tr>
+        <td>{{ service.name }}</td>
+        <td>{{ service.get_service_type_display }}</td>
+        <td>{{ service.provider.username }}</td>
+        <td>{{ service.location }}</td>
+        <td>{% if service.price %}ETB {{ service.price }}{% else %}{% trans "Contact for price" %}{% endif %}</td>
+        <td>{{ service.is_available }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">{% trans "No dairy services available." %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

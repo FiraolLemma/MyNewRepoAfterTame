@@ -1,0 +1,135 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-11 01:30+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: .\poultryitems\templates\poultryitems\item_create.html:15
+msgid "Create New Item"
+msgstr "አዲስ ንጥል ፍጠር"
+
+#: .\poultryitems\templates\poultryitems\item_create.html:16
+msgid "Fill in the details below to add a new item to your collection"
+msgstr ""
+
+#: .\poultryitems\templates\poultryitems\item_create.html:27
+msgid "Basic Information"
+msgstr ""
+
+#: .\poultryitems\templates\poultryitems\item_create.html:54
+#: .\poultryitems\templates\poultryitems\item_detail.html:108
+msgid "Description"
+msgstr ""
+
+#: .\poultryitems\templates\poultryitems\item_create.html:67
+msgid "Provide detailed information about your item"
+msgstr ""
+
+#: .\poultryitems\templates\poultryitems\item_create.html:74
+msgid "Images"
+msgstr ""
+
+#: .\poultryitems\templates\poultryitems\item_create.html:84
+msgid "Click to upload images"
+msgstr ""
+
+#: .\poultryitems\templates\poultryitems\item_create.html:85
+msgid "PNG, JPG up to 5MB"
+msgstr ""
+
+#: .\poultryitems\templates\poultryitems\item_create.html:103
+msgid "Save Item"
+msgstr "ንጥል አስቀምጥ"
+
+#: .\poultryitems\templates\poultryitems\item_detail.html:30
+#, fuzzy
+#| msgid "Sell Item"
+msgid "Seller"
+msgstr "ንጥል ሽይ"
+
+#: .\poultryitems\templates\poultryitems\item_detail.html:39
+#, fuzzy
+#| msgid "Contact Seller"
+msgid "Contact"
+msgstr "ለሻጭ ያግኙ"
+
+#: .\poultryitems\templates\poultryitems\item_detail.html:86
+msgid "Add to Cart"
+msgstr ""
+
+#: .\poultryitems\templates\poultryitems\item_detail.html:116
+msgid "Gallery"
+msgstr "ጋለሪ"
+
+#: .\poultryitems\templates\poultryitems\item_detail.html:143
+msgid "Edit"
+msgstr ""
+
+#: .\poultryitems\templates\poultryitems\item_detail.html:149
+msgid "Delete"
+msgstr ""
+
+#: .\poultryitems\templates\poultryitems\item_list.html:12
+msgid "Poultry Marketplace"
+msgstr "የዶሮ ገበያ"
+
+#: .\poultryitems\templates\poultryitems\item_list.html:15
+msgid "Sell Item"
+msgstr "ንጥል ሽይ"
+
+#: .\poultryitems\templates\poultryitems\item_list.html:28
+msgid "ETB"
+msgstr "ብር"
+
+#: .\poultryitems\templates\poultryitems\item_list.html:48
+msgid "Posted"
+msgstr "ተለጠፈ"
+
+#: .\poultryitems\templates\poultryitems\item_list.html:57
+msgid "No poultry items available yet"
+msgstr "እስካሁን ድረስ የዶሮ ንጥሎች አልተገኙም"
+
+#: .\poultryitems\templates\poultryitems\item_list.html:60
+msgid "Be the first to sell"
+msgstr "የመጀመሪያው ሻጭ ይሁኑ"
+
+#: .\poultryitems\templates\poultryitems\item_list.html:63
+msgid "Please login to add items"
+msgstr "ንጥሎችን ለመጨመር እባክዎ ይግቡ"
+
+#: .\poultryitems\templates\poultryitems\item_list.html:74
+msgid "First"
+msgstr "መጀመሪያ"
+
+#: .\poultryitems\templates\poultryitems\item_list.html:77
+msgid "Previous"
+msgstr "ቀዳሚ"
+
+#: .\poultryitems\templates\poultryitems\item_list.html:83
+msgid "Page"
+msgstr "ገፅ"
+
+#: .\poultryitems\templates\poultryitems\item_list.html:83
+msgid "of"
+msgstr "ከ"
+
+#~ msgid "Price: ETB"
+#~ msgstr "ዋጋ፡ ብር"
+
+#, fuzzy
+#~| msgid "No poultry items available yet"
+#~ msgid "No additional images available."
+#~ msgstr "እስካሁን ድረስ የዶሮ ንጥሎች አልተገኙም"

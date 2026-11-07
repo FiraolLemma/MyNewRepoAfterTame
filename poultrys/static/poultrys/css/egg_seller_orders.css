@@ -1,0 +1,138 @@
+/* ---------- Page Container ---------- */
+.orders-page {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    background: #e6e6e6;
+}
+
+/* ---------- Title ---------- */
+.orders-page h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #222;
+    text-align: center;
+}
+
+/* ---------- Table Wrapper ---------- */
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fffbfb;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* ---------- Table Header ---------- */
+.orders-table thead {
+    background: #007bff;
+    color: white;
+    text-align: left;
+}
+
+.orders-table th {
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* ---------- Table Rows ---------- */
+.orders-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.orders-table tr:hover {
+    background: #f9f9f9;
+}
+
+/* ---------- Empty Row ---------- */
+.orders-table td[colspan] {
+    text-align: center;
+    padding: 1.5rem;
+    color: #888;
+}
+
+/* ---------- Responsive Design ---------- */
+@media (max-width: 768px) {
+    .orders-table,
+    .orders-table thead,
+    .orders-table tbody,
+    .orders-table th,
+    .orders-table td,
+    .orders-table tr {
+        display: block;
+        width: 100%;
+    }
+
+    .orders-table thead {
+        display: none; /* Hide header */
+    }
+
+    .orders-table tr {
+        margin-bottom: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.603);
+        overflow: hidden;
+    }
+
+    .orders-table td {
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+
+    .orders-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #444;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.back-to-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background-color: #f8f9fa;
+    color: #333;
+    text-decoration: none;
+    border-radius: 10px;
+    border: 1px solid #cfcfcf;
+    transition: all 0.3s ease;
+}
+
+.back-to-home:hover {
+    background-color: #f8bc6d;
+    text-decoration: none;
+    border: 1px solid #87dfeb;
+    color: #007bff;
+}

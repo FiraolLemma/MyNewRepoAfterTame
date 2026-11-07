@@ -1,0 +1,27 @@
+{% extends "base/base.html" %}
+{% load i18n static %}
+
+{% block title %}{{ form_title }} | {% trans "Dairy Farm Services" %}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'dairys/css/dairy_market.css' %}">{% endblock %}
+
+{% block content %}
+<main class="dairy-market container">
+    <section class="dairy-form-panel">
+        <p class="dairy-market__eyebrow">{% trans "For dairy farms and service providers" %}</p>
+        <h1>{{ form_title }}</h1>
+        <form method="post" class="dairy-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="dairy-form__errors">{{ form.non_field_errors }}</div>{% endif %}
+            {% for field in form %}
+            <div class="dairy-form__field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<span class="dairy-form__error">{{ error }}</span>{% endfor %}
+            </div>
+            {% endfor %}
+            <button class="dairy-button" type="submit">{% trans "Save service" %}</button>
+        </form>
+    </section>
+</main>
+{% endblock %}
