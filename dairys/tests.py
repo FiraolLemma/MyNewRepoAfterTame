@@ -13,6 +13,11 @@ class DairyMarketplaceTests(TestCase):
             phone_number="+251911111111",
             password="test-password",
         )
+        get_user_model().objects.filter(pk=self.user.pk).update(
+            onboarding_complete=True,
+            pin_setup_required=False,
+        )
+        self.user.onboarding_complete = True
         self.user.groups.remove(Group.objects.get(name="Customer"))
         self.user.groups.add(Group.objects.get(name="Farmer"))
         self.category, _ = DairyCategory.objects.get_or_create(

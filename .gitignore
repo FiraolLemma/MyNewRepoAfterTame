@@ -48,19 +48,6 @@ Thumbs.db
 # Railway-specific
 .railwayignore
 
-# Git
-*.swp
-*.swo
-*.bak
-*~
-
-# Backup and metadata
-*.orig
-*.tmp
-
-# Notes and docs
-notes.md
-
 # all files
 Procfile
 requirements.txt

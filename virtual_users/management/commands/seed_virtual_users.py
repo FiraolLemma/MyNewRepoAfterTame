@@ -7,8 +7,6 @@ from django.utils.text import slugify
 
 from poultrys.models import Category, Item
 from dairys.models import DairyCategory, DairyProduct, DairyService
-from users.models import Profile
-
 from virtual_users.models import ActivityHistory, VirtualAgent, VirtualService
 
 
@@ -273,15 +271,14 @@ class Command(BaseCommand):
             user.save(update_fields=('password', 'is_active', 'is_staff'))
 
             display_name = data['name']
-            profile, _ = Profile.objects.get_or_create(user=user)
-            profile.bio = (
+            user.bio = (
                 f'[Virtual demo account] {display_name} is a {data["style"]} '
                 f'{data["role"].replace("_", " ")} based in {data["city"]}. '
                 f'Primary goal: {data["goal"]}.'
             )
-            profile.location = data['city']
-            profile.email = f'{username}@example.invalid'
-            profile.save(update_fields=('bio', 'location', 'email'))
+            user.location = data['city']
+            user.email = f'{username}@example.invalid'
+            user.save(update_fields=('bio', 'location', 'email'))
 
             agent, _ = VirtualAgent.objects.update_or_create(
                 user=user,

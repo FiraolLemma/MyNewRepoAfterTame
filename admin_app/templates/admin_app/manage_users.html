@@ -15,14 +15,16 @@
         </tr>
     </thead>
     <tbody>
-        {% for profile in users %}
+        {% for user in users %}
         <tr>
-            <td>{{ profile.user.username }}</td>
-            <td>{{ profile.user.phone_number }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.phone_number }}</td>
             <td>
-                <img src="{{ profile.profile_picture.url }}" width="50">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" width="50" alt="{{ user.username }}">
+                {% endif %}
             </td>
-            <td>{{ profile.location }}</td>
+            <td>{{ user.location }}</td>
         </tr>
         {% empty %}
         <tr><td colspan="4">No users found.</td></tr>

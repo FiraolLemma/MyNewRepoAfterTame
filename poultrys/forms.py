@@ -8,7 +8,6 @@ from .models import EggSeller, EggOrder
 from .models import ChickenSeller
 from django import forms
 from .models import TrainingEnrollment
-from users.models import Profile
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -125,12 +124,7 @@ class EggSellerForm(forms.ModelForm):
         seller = super().save(commit=False)
         seller.owner_name = self.user.username
         seller.phone = self.user.phone_number
-        seller.email = (
-            Profile.objects.filter(user_id=self.user.pk)
-            .values_list('email', flat=True)
-            .first()
-            or ''
-        )
+        seller.email = self.user.email or ''
         if commit:
             seller.save()
             self.save_m2m()

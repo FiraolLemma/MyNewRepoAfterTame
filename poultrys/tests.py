@@ -62,6 +62,11 @@ class PoultryAccountRelationshipTests(TestCase):
             phone_number="+251911111130",
             password="Safe-Test-Password-123!",
         )
+        user_model.objects.filter(
+            pk__in=(self.customer.pk, self.farmer.pk)
+        ).update(onboarding_complete=True, pin_setup_required=False)
+        self.customer.onboarding_complete = True
+        self.farmer.onboarding_complete = True
         self.farmer.groups.remove(Group.objects.get(name="Customer"))
         self.farmer.groups.add(Group.objects.get(name="Farmer"))
         self.farmer.profile.email = "farmer@example.com"

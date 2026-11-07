@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from dairys.models import DairyProduct, DairyService
 from poultrys.models import Item, EggSeller, ChickenSeller, Consultant, TrainingEnrollment
-from users.models import Profile
+from users.models import CustomUser
 from conversation.models import Conversation
 from django.contrib.auth.decorators import user_passes_test
 
@@ -21,7 +21,7 @@ def dashboard(request):
         "chicken_sellers_count": ChickenSeller.objects.count(),
         "consultants_count": Consultant.objects.count(),
         "trainings_count": TrainingEnrollment.objects.count(),
-        "users_count": Profile.objects.count(),
+        "users_count": CustomUser.objects.count(),
         "conversations_count": Conversation.objects.count(),
     }
     return render(request, "admin_app/dashboard.html", context)
@@ -48,7 +48,8 @@ def manage_poultry(request):
 
 @admin_required
 def manage_users(request):
-    return render(request, "admin_app/manage_users.html", {"users": Profile.objects.all()})
+    users = CustomUser.objects.all()
+    return render(request, "admin_app/manage_users.html", {"users": users})
 
 
 @admin_required
