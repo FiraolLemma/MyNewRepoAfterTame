@@ -31,7 +31,7 @@ from .models import TrainingEnrollment
 from django.utils.decorators import method_decorator
 from decimal import Decimal, InvalidOperation
 from companies.models import Farm
-from users.roles import UserRole, role_required
+from users.roles import UserRole, has_any_role, role_required
 
 @require_POST
 @login_required
@@ -254,35 +254,53 @@ def book_consultation(request):
     })
 
 # eggs for sell
+
 def egg_sellers(request):
-    sellers = EggSeller.objects.filter(is_active=True).select_related('user__profile')
+    sellers = (
+        EggSeller.objects
+        .filter(is_active=True)
+        .select_related('user', 'farm')
+    )
+
     form = EggSellerFilterForm(request.GET or None)
-    
+
     if form.is_valid():
         egg_type = form.cleaned_data.get('egg_type')
         city = form.cleaned_data.get('city')
         min_price = form.cleaned_data.get('min_price')
         max_price = form.cleaned_data.get('max_price')
         certified_only = form.cleaned_data.get('certified_only')
-        
+
         if egg_type:
             sellers = sellers.filter(egg_type=egg_type)
+
         if city:
             sellers = sellers.filter(city__icontains=city)
+
         if min_price:
             sellers = sellers.filter(price_per_dozen__gte=min_price)
+
         if max_price:
             sellers = sellers.filter(price_per_dozen__lte=max_price)
+
         if certified_only:
-            sellers = sellers.filter(~Q(certification='none'))
-    
+            sellers = sellers.exclude(certification='none')
+
     sellers = sellers.order_by('-is_verified', '-rating')
-    
+
     context = {
         'sellers': sellers,
         'filter_form': form,
+        'can_add_egg_seller': has_any_role(
+            request.user,
+            UserRole.ADMIN,
+            UserRole.FARMER,
+            UserRole.SUPPLIER,
+        ),
     }
+
     return render(request, 'poultrys/egg_sellers.html', context)
+
 
 @require_POST
 def place_egg_order(request):
@@ -337,7 +355,7 @@ def _json_request_data(request):
     return data if isinstance(data, dict) else None
 
 
-@role_required(UserRole.FARMER, UserRole.SUPPLIER)
+@role_required(UserRole.ADMIN, UserRole.FARMER, UserRole.SUPPLIER)
 def add_egg_seller(request):
     
     if hasattr(request.user, 'egg_seller'):

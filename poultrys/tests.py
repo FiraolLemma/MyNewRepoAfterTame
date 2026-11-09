@@ -12,6 +12,8 @@ from .models import (
     EggOrder,
     EggSeller,
 )
+from users.roles import UserRole, role_group_name
+from virtual_users.models import VirtualAgent
 
 
 class PoultryLandingPageTests(TestCase):
@@ -232,6 +234,79 @@ class PoultryAccountRelationshipTests(TestCase):
         self.assertNotContains(response, 'name="facebook"')
         self.assertNotContains(response, 'name="telegram"')
         self.assertNotContains(response, 'name="instagram"')
+
+    def test_customer_can_browse_but_cannot_add_egg_sellers(self):
+        veterinarian = get_user_model().objects.create_user(
+            username="egg-veterinarian",
+            phone_number="+251911111146",
+            password="1234",
+        )
+        veterinarian.groups.remove(Group.objects.get(name="Customer"))
+        veterinarian.groups.add(Group.objects.get(name="Veterinarian"))
+
+        for user in (self.customer, veterinarian):
+            with self.subTest(role=user.username):
+                self.client.force_login(user)
+                listing_response = self.client.get(
+                    reverse("poultrys:egg_sellers")
+                )
+                self.assertEqual(listing_response.status_code, 200)
+                self.assertNotContains(listing_response, "Add Egg Seller")
+
+                add_response = self.client.get(
+                    reverse("poultrys:add_egg_seller")
+                )
+                self.assertEqual(add_response.status_code, 403)
+        self.assertEqual(EggSeller.objects.count(), 1)
+
+    def test_admin_and_supplier_can_open_egg_seller_creation(self):
+        admin = get_user_model().objects.create_user(
+            username="egg-admin",
+            phone_number="+251911111143",
+            password="1234",
+        )
+        admin.groups.remove(Group.objects.get(name="Customer"))
+        admin.groups.add(Group.objects.get(name="Admin"))
+        self.assertTrue(admin.has_role(UserRole.ADMIN))
+        self.assertTrue(
+            admin.groups.filter(name=role_group_name(UserRole.ADMIN)).exists()
+        )
+
+        supplier = get_user_model().objects.create_user(
+            username="egg-supplier",
+            phone_number="+251911111144",
+            password="1234",
+        )
+        supplier.groups.remove(Group.objects.get(name="Customer"))
+        supplier.groups.add(Group.objects.get(name="Supplier"))
+
+        for user in (admin, self.farmer, supplier):
+            with self.subTest(role=user.username):
+                self.client.force_login(user)
+                response = self.client.get(reverse("poultrys:add_egg_seller"))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "Add New Egg Seller")
+
+    def test_ai_virtual_users_can_browse_but_cannot_add_egg_sellers(self):
+        ai_user = get_user_model().objects.create_user(
+            username="egg-ai-user",
+            phone_number="+251911111145",
+            password="1234",
+        )
+        VirtualAgent.objects.create(
+            user=ai_user,
+            role=VirtualAgent.Role.FARMER,
+            persona_label="AI Farmer",
+        )
+        self.client.force_login(ai_user)
+
+        listing_response = self.client.get(reverse("poultrys:egg_sellers"))
+        self.assertEqual(listing_response.status_code, 200)
+        self.assertNotContains(listing_response, "Add Egg Seller")
+        self.assertEqual(
+            self.client.get(reverse("poultrys:add_egg_seller")).status_code,
+            403,
+        )
 
     def csrf_token_from_page(self, url):
         response = self.client.get(url)
