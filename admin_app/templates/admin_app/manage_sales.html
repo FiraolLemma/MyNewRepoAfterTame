@@ -1,0 +1,48 @@
+{% extends "base/base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Manage poultry sales" %}{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'admin_app/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="dashboard-container">
+  <p class="eyebrow">{% trans "Poultry management" %}</p>
+  <h1>{% trans "Egg sales records" %}</h1>
+  <div class="table-panel">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">{% trans "Order" %}</th>
+            <th scope="col">{% trans "Customer" %}</th>
+            <th scope="col">{% trans "Seller / farm" %}</th>
+            <th scope="col">{% trans "Quantity (dozens)" %}</th>
+            <th scope="col">{% trans "Total" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Order date" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            <tr>
+              <td>#{{ order.pk }}</td>
+              <td>{{ order.customer_name }}</td>
+              <td>{{ order.seller.farm_name }}</td>
+              <td>{{ order.quantity }}</td>
+              <td>ETB {{ order.total_price }}</td>
+              <td>{{ order.get_status_display }}</td>
+              <td>{{ order.order_date|date:"SHORT_DATETIME_FORMAT" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td class="empty-state" colspan="7">{% trans "No sales records found." %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p><a class="table-more-link" href="{% url 'admin_app:dashboard' %}">{% trans "Back to dashboard" %}</a></p>
+</main>
+{% endblock %}

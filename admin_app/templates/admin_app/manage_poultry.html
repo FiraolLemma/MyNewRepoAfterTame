@@ -13,8 +13,9 @@
       <tr>
         <th>ID</th>
         <th>Name</th>
-        <th>Stock</th>
         <th>Price</th>
+        <th>Farm</th>
+        <th>Seller</th>
         <th>Created At</th>
       </tr>
     </thead>
@@ -23,13 +24,14 @@
       <tr>
         <td>{{ item.id }}</td>
         <td>{{ item.name }}</td>
-        <td>{{ item.stock }}</td>
         <td>{{ item.price }}</td>
+        <td>{{ item.farm.name|default:"—" }}</td>
+        <td>{{ item.created_by.username }}</td>
         <td>{{ item.created_at }}</td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="5">No poultry items available.</td>
+        <td colspan="6">No poultry items available.</td>
       </tr>
       {% endfor %}
     </tbody>

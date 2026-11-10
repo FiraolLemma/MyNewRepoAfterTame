@@ -1,39 +1,164 @@
 {% extends "base/base.html" %}
-{% load static %}
-{% load i18n %}
+{% load static i18n %}
 
-{% block title %}
-    {% trans " Admin-Only | Ethiopian Sheger Market place" %}
-{% endblock %}
+{% block title %}{% trans "Farm administration dashboard" %}{% endblock %}
 
 {% block css %}
   <link rel="stylesheet" href="{% static 'admin_app/css/dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-  <h1>Custom Admin Dashboard</h1>
+<main class="dashboard-container">
+  <header class="dashboard-header">
+    <div>
+      <p class="eyebrow">{% trans "Farm management" %}</p>
+      <h1>{% trans "Administration dashboard" %}</h1>
+      <p>{% trans "A live overview of users, farms, listings, and poultry orders." %}</p>
+    </div>
+    <a class="dashboard-secondary-link" href="{% url 'base:admin_links' %}">
+      {% trans "All admin links" %}
+    </a>
+  </header>
 
-  <ul class="dashboard-stats">
-    <li>Dairy Products: {{ dairy_products_count }}</li>
-    <li>Dairy Services: {{ dairy_services_count }}</li>
-    <li>Poultry Items: {{ poultry_count }}</li>
-    <li>Users: {{ users_count }}</li>
-    {% if companies_count %}
-      <li>Companies: {{ companies_count }}</li>
-    {% endif %}
-    <li>Conversations: {{ conversations_count }}</li>
-  </ul>
+  <section class="dashboard-section" aria-labelledby="overview-heading">
+    <h2 id="overview-heading">{% trans "Platform overview" %}</h2>
+    <ul class="dashboard-stats">
+      <li class="stat-card stat-card--users">
+        <span class="stat-label">{% trans "Users" %}</span>
+        <strong>{{ users_count }}</strong>
+        <span class="stat-detail">{% trans "Dairy managers" %}: {{ dairy_managers_count }} · {% trans "Poultry managers" %}: {{ poultry_managers_count }}</span>
+      </li>
+      <li class="stat-card stat-card--dairy">
+        <span class="stat-label">{% trans "Dairy farms" %}</span>
+        <strong>{{ dairy_farms_count }}</strong>
+        <span class="stat-detail">{{ dairy_products_count }} {% trans "products" %} · {{ dairy_services_count }} {% trans "services" %}</span>
+      </li>
+      <li class="stat-card stat-card--poultry">
+        <span class="stat-label">{% trans "Poultry farms" %}</span>
+        <strong>{{ poultry_farms_count }}</strong>
+        <span class="stat-detail">{{ poultry_items_count }} {% trans "items" %} · {{ egg_sellers_count }} {% trans "egg sellers" %}</span>
+      </li>
+      <li class="stat-card stat-card--orders">
+        <span class="stat-label">{% trans "Egg orders" %}</span>
+        <strong>{{ egg_orders_count }}</strong>
+        <span class="stat-detail">{{ chicken_sellers_count }} {% trans "chicken sellers" %}</span>
+      </li>
+    </ul>
+  </section>
 
-  <nav class="dashboard-nav">
-    <a href="{% url 'admin_app:manage_clothings' %}">Manage Dairy Marketplace</a>
-    <a href="{% url 'admin_app:manage_poultry' %}">Manage Poultry</a>
-    <a href="{% url 'admin_app:manage_users' %}">Manage Users</a>
-    <a href="{% url 'admin_app:manage_conversations' %}">Manage Conversations</a>
-  </nav>
-</div>
-{% endblock %}
+  <section class="dashboard-section" aria-labelledby="actions-heading">
+    <h2 id="actions-heading">{% trans "Quick links" %}</h2>
+    {% include "base/_admin_quick_links.html" %}
+  </section>
 
-{% block js %}
-  <script src="{% static 'admin_app/js/dashboard.js' %}"></script>
+  <section class="dashboard-section" aria-labelledby="records-heading">
+    <div class="section-heading">
+      <div>
+        <h2 id="records-heading">{% trans "Recent records" %}</h2>
+        <p>{% trans "Search dairy and poultry listings or egg orders." %}</p>
+      </div>
+      <form class="dashboard-search" method="get" role="search">
+        <label for="{{ search_form.q.id_for_label }}">{{ search_form.q.label }}</label>
+        <div class="search-control">
+          {{ search_form.q }}
+          <button type="submit">{% trans "Search" %}</button>
+        </div>
+        {% if search_form.q.errors %}
+          <span class="form-error">{{ search_form.q.errors|join:", " }}</span>
+        {% endif %}
+      </form>
+    </div>
+
+    <div class="dashboard-tables">
+      <section class="table-panel" aria-labelledby="dairy-records-heading">
+        <h3 id="dairy-records-heading">{% trans "Dairy products" %}</h3>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">{% trans "Product" %}</th>
+                <th scope="col">{% trans "Farm" %}</th>
+                <th scope="col">{% trans "Quantity" %}</th>
+                <th scope="col">{% trans "Manager" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for product in dairy_products %}
+                <tr>
+                  <td>{{ product.name }}</td>
+                  <td>{{ product.farm.name|default:"—" }}</td>
+                  <td>{{ product.quantity_available }} {{ product.get_unit_display }}</td>
+                  <td>{{ product.created_by.username }}</td>
+                </tr>
+              {% empty %}
+                <tr><td class="empty-state" colspan="4">{% trans "No dairy products found." %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <a class="table-more-link" href="{% url 'admin_app:manage_clothings' %}">{% trans "Manage dairy inventory" %}</a>
+      </section>
+
+      <section class="table-panel" aria-labelledby="poultry-records-heading">
+        <h3 id="poultry-records-heading">{% trans "Poultry items" %}</h3>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">{% trans "Item" %}</th>
+                <th scope="col">{% trans "Farm" %}</th>
+                <th scope="col">{% trans "Price" %}</th>
+                <th scope="col">{% trans "Manager" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in poultry_items %}
+                <tr>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.farm.name|default:"—" }}</td>
+                  <td>ETB {{ item.price }}</td>
+                  <td>{{ item.created_by.username }}</td>
+                </tr>
+              {% empty %}
+                <tr><td class="empty-state" colspan="4">{% trans "No poultry items found." %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <a class="table-more-link" href="{% url 'admin_app:manage_poultry' %}">{% trans "Manage poultry inventory" %}</a>
+      </section>
+
+      <section class="table-panel" aria-labelledby="sales-records-heading">
+        <h3 id="sales-records-heading">{% trans "Recent egg orders" %}</h3>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">{% trans "Order" %}</th>
+                <th scope="col">{% trans "Customer" %}</th>
+                <th scope="col">{% trans "Farm" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
+                <th scope="col">{% trans "Total" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in egg_orders %}
+                <tr>
+                  <td>#{{ order.pk }}</td>
+                  <td>{{ order.customer_name }}</td>
+                  <td>{{ order.seller.farm_name }}</td>
+                  <td>{{ order.get_status_display }}</td>
+                  <td>ETB {{ order.total_price }}</td>
+                </tr>
+              {% empty %}
+                <tr><td class="empty-state" colspan="5">{% trans "No egg orders found." %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <a class="table-more-link" href="{% url 'admin_app:manage_sales' %}">{% trans "View all sales records" %}</a>
+      </section>
+    </div>
+  </section>
+</main>
 {% endblock %}
