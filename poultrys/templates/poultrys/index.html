@@ -89,10 +89,10 @@
             <i class="fas fa-feather-pointed"></i>
         </div>
         <div class="poultry-home__join-content">
-            <h2>Grow Together<br>with <span>ShegerCity</span></h2>
-            <p>Empowering Ethiopian farmers<br>for a productive future.</p>
-            <a href="{% url 'users:register' %}" class="poultry-home__button poultry-home__button--yellow">
-                Join Now <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            <h2>Poultry Farm<br><span>Consultants</span></h2>
+            <p>Get expert guidance<br>to build a successful poultry farm.</p>
+            <a href="{% url 'poultrys:veterinary_consultancy' %}" class="poultry-home__button poultry-home__button--yellow">
+                Find a Consultant <i class="fas fa-arrow-right" aria-hidden="true"></i>
             </a>
         </div>
     </article>
@@ -100,15 +100,15 @@
     <article class="poultry-home__training-card">
         <h2>
             <i class="fas fa-graduation-cap" aria-hidden="true"></i>
-            <a href="{% url 'poultrys:poultry_trainings' %}">Poultry Farming Training &amp; Consultancy</a>
+            <a href="{% url 'poultrys:poultry_trainings' %}">Poultry Farm Training</a>
         </h2>
         <ul>
             <li><i class="fas fa-circle-check" aria-hidden="true"></i>Modern poultry farming techniques</li>
             <li><i class="fas fa-circle-check" aria-hidden="true"></i>Disease prevention &amp; management</li>
             <li><i class="fas fa-circle-check" aria-hidden="true"></i>Farm management &amp; business strategies</li>
-            <li><i class="fas fa-circle-check" aria-hidden="true"></i>Access to expert consultation</li>
+            <li><i class="fas fa-circle-check" aria-hidden="true"></i>Practical, hands-on farm training</li>
         </ul>
-        <a href="{% url 'poultrys:veterinary_consultancy' %}" class="poultry-home__button poultry-home__button--green">
+        <a href="{% url 'poultrys:poultry_trainings' %}" class="poultry-home__button poultry-home__button--green">
             Get Started <i class="fas fa-arrow-right" aria-hidden="true"></i>
         </a>
     </article>
