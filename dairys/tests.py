@@ -34,6 +34,7 @@ class DairyMarketplaceTests(TestCase):
             unit=DairyProduct.Unit.LITER,
             quantity_available=10,
             location="Bishoftu",
+            is_featured=True,
         )
         self.service = DairyService.objects.create(
             provider=self.user,
@@ -45,9 +46,19 @@ class DairyMarketplaceTests(TestCase):
             location="Bishoftu",
         )
 
+    def test_dairy_homepage_uses_its_own_landing_template(self):
+        response = self.client.get(reverse("dairys:index"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "dairys/index.html")
+        self.assertContains(response, "dairy_home.css")
+        self.assertContains(response, "healthy farms.")
+        self.assertContains(response, self.product.name)
+        self.assertContains(response, self.service.name)
+
     def test_marketplace_renders_products_and_services(self):
-        self.assertEqual(reverse("clothings:clothing_list"), "/en/dairys/")
-        response = self.client.get(reverse("clothings:clothing_list"))
+        self.assertEqual(reverse("dairys:marketplace"), "/en/dairys/market/")
+        response = self.client.get(reverse("dairys:marketplace"))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "dairys/dairy_market.html")
@@ -56,18 +67,18 @@ class DairyMarketplaceTests(TestCase):
         self.assertContains(response, self.service.name)
 
     def test_old_marketplace_url_redirects_to_dairys(self):
-        response = self.client.get("/en/clothings/?q=milk")
+        response = self.client.get("/en/dairys/?q=milk")
 
         self.assertRedirects(
             response,
-            "/en/dairys/?q=milk",
+            "/en/dairys/market/?q=milk",
             status_code=301,
             fetch_redirect_response=False,
         )
 
     def test_marketplace_search_filters_products_and_services(self):
         response = self.client.get(
-            reverse("clothings:clothing_list"),
+            reverse("dairys:marketplace"),
             {"q": "collection"},
         )
 
@@ -87,7 +98,7 @@ class DairyMarketplaceTests(TestCase):
     def test_farmer_can_create_product_and_service_listings(self):
         self.client.force_login(self.user)
         product_response = self.client.post(
-            reverse("clothings:clothing_create"),
+            reverse("dairys:product_create"),
             {
                 "name": "Fresh cream",
                 "category": self.category.pk,
@@ -99,7 +110,7 @@ class DairyMarketplaceTests(TestCase):
             },
         )
         service_response = self.client.post(
-            reverse("clothings:dairy_service_create"),
+            reverse("dairys:dairy_service_create"),
             {
                 "name": "Farm animal care",
                 "service_type": DairyService.ServiceType.ANIMAL_CARE,

@@ -63,11 +63,12 @@ urlpatterns += i18n_patterns(
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('contact/', include('contact.urls' , namespace='contact')),
     path('companies/', include('companies.urls')),
-    path('dairys/', include('dairys.urls')),
+    path('dairys/', include('dairys.urls', namespace='dairys')),
+    path('dairys/', include('dairys.urls', namespace='clothings')),
     path(
         'clothings/',
         RedirectView.as_view(
-            pattern_name='clothings:clothing_list',
+            pattern_name='dairys:marketplace',
             permanent=True,
             query_string=True,
         ),

@@ -101,14 +101,14 @@ def dashboard(request):
 
 
 @admin_required
-def manage_clothings(request):
+def manage_dairys(request):
     context = {
         "dairy_products": DairyProduct.objects.select_related(
             "category", "created_by", "farm"
         ),
         "dairy_services": DairyService.objects.select_related("provider", "farm"),
     }
-    return render(request, "admin_app/manage_clothings.html", context)
+    return render(request, "admin_app/manage_dairys.html", context)
 
 
 @admin_required

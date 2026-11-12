@@ -9,6 +9,7 @@
 
 {% block content %}
 <main class="dairy-market container">
+    <p class="dairy-market__eyebrow"><a href="{% url 'dairys:index' %}">{% trans "Dairy farm home" %}</a></p>
     <header class="dairy-market__hero">
         <p class="dairy-market__eyebrow">{% trans "Local dairy farms and services" %}</p>
         <h1>{% trans "Dairy Farm Marketplace" %}</h1>
@@ -27,8 +28,8 @@
     </header>
 
     <div class="dairy-market__actions">
-        <a class="dairy-button" href="{% url 'clothings:clothing_create' %}">{% trans "List a dairy product" %}</a>
-        <a class="dairy-button dairy-button--light" href="{% url 'clothings:dairy_service_create' %}">{% trans "Offer a farm service" %}</a>
+        <a class="dairy-button" href="{% url 'dairys:product_create' %}">{% trans "List a dairy product" %}</a>
+        <a class="dairy-button dairy-button--light" href="{% url 'dairys:dairy_service_create' %}">{% trans "Offer a farm service" %}</a>
     </div>
 
     <section aria-labelledby="dairy-products-title">
@@ -76,7 +77,7 @@
         {% endif %}
     </section>
 
-    <section class="dairy-services" aria-labelledby="dairy-services-title">
+    <section id="dairy-services" class="dairy-services" aria-labelledby="dairy-services-title">
         <div class="dairy-market__heading">
             <div>
                 <p class="dairy-market__eyebrow">{% trans "Support for your farm" %}</p>

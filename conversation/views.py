@@ -70,12 +70,12 @@ def new_conversation(request, app_label, model_name, object_id):
     
     if item_owner == request.user:
         messages.error(request, "You cannot start a conversation with yourself.")
-        if app_label == 'clothings':
+        if app_label == 'dairys':
             if model_name == 'dairyservice':
-                return redirect('clothings:dairy_service_detail', slug=item.slug)
+                return redirect('dairys:dairy_service_detail', slug=item.slug)
             if model_name == 'dairyproduct':
-                return redirect('clothings:clothing_detail', slug=item.slug)
-            return redirect('clothings:clothing_list')
+                return redirect('dairys:product_detail', slug=item.slug)
+            return redirect('dairys:marketplace')
 
         redirect_map = {
             'poultryitems': 'poultrys:item_detail',

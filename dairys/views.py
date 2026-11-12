@@ -12,6 +12,27 @@ from .models import DairyCategory, DairyProduct, DairyService
 from users.roles import UserRole, role_required
 
 
+def dairy_home(request):
+    featured_products = (
+        DairyProduct.objects.select_related("category", "created_by")
+        .filter(is_featured=True, quantity_available__gt=0)
+        .order_by("-is_featured", "-created_at")[:3]
+    )
+    featured_services = (
+        DairyService.objects.select_related("provider")
+        .filter(is_available=True)
+        .order_by("-created_at")[:3]
+    )
+    return render(
+        request,
+        "dairys/index.html",
+        {
+            "featured_products": featured_products,
+            "featured_services": featured_services,
+        },
+    )
+
+
 class DairyMarketView(ListView):
     model = DairyProduct
     template_name = "dairys/dairy_market.html"
@@ -146,7 +167,7 @@ def dairy_product_delete(request, slug):
     if request.method == "POST":
         product.delete()
         messages.success(request, "Your dairy product has been removed.")
-        return redirect("clothings:clothing_list")
+        return redirect("dairys:marketplace")
     return render(
         request,
         "dairys/dairyproduct_confirm_delete.html",
@@ -198,7 +219,7 @@ def dairy_service_delete(request, slug):
     if request.method == "POST":
         service.delete()
         messages.success(request, "Your dairy farm service has been removed.")
-        return redirect("clothings:clothing_list")
+        return redirect("dairys:marketplace")
     return render(
         request,
         "dairys/dairyservice_confirm_delete.html",

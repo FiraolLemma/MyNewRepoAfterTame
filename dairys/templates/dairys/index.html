@@ -1,0 +1,206 @@
+{% extends "base/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Dairy Farm | Ethiopian Sheger Marketplace" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/dairy_home.css' %}?v=2">
+{% endblock %}
+
+{% block content %}
+<main class="dairy-home">
+    <header class="dairy-header">
+        <div class="dairy-header__utility">
+            <div class="dairy-header__inner">
+                <nav class="dairy-header__quick-links" aria-label="{% trans 'Agriculture links' %}">
+                    <a href="{% url 'base:index' %}">{% trans "Agriculture" %}</a>
+                    <span aria-hidden="true">◆</span>
+                    <a href="{% url 'dairys:marketplace' %}">{% trans "Livestock" %}</a>
+                    <span aria-hidden="true">◆</span>
+                    <a href="{% url 'dairys:dairy_service_create' %}">{% trans "Extension Services" %}</a>
+                    <span aria-hidden="true">◆</span>
+                    <a href="{% url 'dairys:marketplace' %}">{% trans "Market Info" %}</a>
+                </nav>
+                <div class="dairy-header__contact">
+                    <a href="tel:+251925259294"><i class="fas fa-phone" aria-hidden="true"></i> +251 925 259 294</a>
+                    <a href="{% url 'contact:contact_us' %}"><i class="fas fa-envelope" aria-hidden="true"></i> {% trans "Contact Us" %}</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'users:profile' %}"><i class="fas fa-user" aria-hidden="true"></i> {{ user.username }}</a>
+                    {% else %}
+                    <a href="{% url 'users:login' %}"><i class="fas fa-user" aria-hidden="true"></i> {% trans "Login" %}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="dairy-header__main">
+            <div class="dairy-header__inner">
+                <a class="dairy-brand" href="{% url 'base:index' %}" aria-label="{% trans 'ShegerAgri home' %}">
+                    <i class="fas fa-leaf" aria-hidden="true"></i>
+                    <span>Sheger<span>Agri</span></span>
+                </a>
+                <form class="dairy-header__search" action="{% url 'base:search_results' %}" method="get" role="search">
+                    <label class="sr-only" for="dairy-search">{% trans "Search the marketplace" %}</label>
+                    <input id="dairy-search" type="search" name="q" placeholder="{% trans 'Search products, farming tips and more...' %}">
+                    <button type="submit" aria-label="{% trans 'Search' %}"><i class="fas fa-search" aria-hidden="true"></i></button>
+                </form>
+                <div class="dairy-header__actions">
+                    {% if user.is_staff or user.is_superuser %}
+                    <a class="dairy-header__admin" href="{% url 'admin_app:dashboard' %}">
+                        <i class="fas fa-user-shield" aria-hidden="true"></i> {% trans "Admin Dashboard" %}
+                    </a>
+                    {% endif %}
+                    {% if user.is_authenticated %}
+                    <a class="dairy-header__account" href="{% url 'users:profile' %}">
+                        <i class="fas fa-circle-user" aria-hidden="true"></i>
+                        <span>{{ user.username }}</span>
+                    </a>
+                    {% else %}
+                    <a class="dairy-header__account" href="{% url 'users:register' %}">
+                        <i class="fas fa-circle-user" aria-hidden="true"></i>
+                        <span>{% trans "Register" %}</span>
+                    </a>
+                    {% endif %}
+                    <button class="dairy-header__menu" type="button" aria-label="{% trans 'Open menu' %}">
+                        <i class="fas fa-bars" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <nav class="dairy-header__nav" aria-label="{% trans 'Main navigation' %}">
+            <div class="dairy-header__inner">
+                <a href="{% url 'base:index' %}"><i class="fas fa-house" aria-hidden="true"></i> {% trans "Home" %}</a>
+                <a class="is-current" href="{% url 'dairys:index' %}"><i class="fas fa-cow" aria-hidden="true"></i> {% trans "Dairy Farm" %}</a>
+                <a href="{% url 'poultrys:index' %}"><i class="fas fa-feather" aria-hidden="true"></i> {% trans "Poultry" %} <i class="fas fa-chevron-down" aria-hidden="true"></i></a>
+            </div>
+        </nav>
+    </header>
+
+    <section class="dairy-home__hero" aria-labelledby="dairy-home-title">
+        <div class="dairy-home__hero-content">
+            <p class="dairy-home__eyebrow">{% trans "Modern Dairy Farming Practices" %}</p>
+            <h1 id="dairy-home-title">{% trans "Healthy Dairy," %}<br><span>{% trans "Profitable Business" %}</span></h1>
+            <p class="dairy-home__hero-description">
+                {% trans "Get expert dairy farming advice and quality resources to boost milk production and income." %}
+            </p>
+            <div class="dairy-home__hero-actions">
+                <a class="dairy-home__button dairy-home__button--gold" href="{% url 'dairys:marketplace' %}#dairy-services">
+                    {% trans "Explore Our Services" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+        <div class="dairy-home__hero-dots" aria-hidden="true"><span></span><i></i><i></i><i></i><i></i></div>
+    </section>
+
+    <section class="dairy-home__services" aria-labelledby="dairy-services-title">
+        <h2 id="dairy-services-title" class="dairy-home__section-title"><span>{% trans "Our Services" %}</span></h2>
+        <div class="dairy-home__service-grid">
+            <a class="dairy-home__service-card dairy-home__service-card--milk" href="{% url 'dairys:marketplace' %}">
+                <span class="dairy-home__service-icon"><i class="fas fa-bottle-water" aria-hidden="true"></i><i class="fas fa-glass-water" aria-hidden="true"></i></span>
+                <span class="dairy-home__service-copy">
+                    <h3>{% trans "Fresh Milk" %}</h3>
+                    <p>{% trans "Pure and nutritious milk from healthy cows." %}</p>
+                    <span class="dairy-home__card-link">{% trans "View More" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                </span>
+            </a>
+            <a class="dairy-home__service-card dairy-home__service-card--care" href="{% url 'dairys:marketplace' %}#dairy-services">
+                <span class="dairy-home__service-icon"><i class="fas fa-cheese" aria-hidden="true"></i><i class="fas fa-cow" aria-hidden="true"></i></span>
+                <span class="dairy-home__service-copy">
+                    <h3>{% trans "Dairy Items" %}</h3>
+                    <p>{% trans "Quality dairy products for your family and market." %}</p>
+                    <span class="dairy-home__card-link">{% trans "View More" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                </span>
+            </a>
+            <a class="dairy-home__service-card dairy-home__service-card--training" href="{% url 'dairys:marketplace' %}">
+                <span class="dairy-home__service-icon"><i class="fas fa-cow" aria-hidden="true"></i></span>
+                <span class="dairy-home__service-copy">
+                    <h3>{% trans "Dairy Cows" %}</h3>
+                    <p>{% trans "Healthy and productive dairy cows." %}</p>
+                    <span class="dairy-home__card-link">{% trans "View More" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                </span>
+            </a>
+        </div>
+    </section>
+
+    <section class="dairy-home__promos" aria-label="{% trans 'Dairy farm support' %}">
+        <div class="dairy-home__growth">
+            <i class="dairy-home__growth-icon fas fa-chart-line" aria-hidden="true"></i>
+            <div class="dairy-home__growth-copy">
+                <h2>{% trans "Dairy Farm" %}<br>{% trans "Growth Together" %}</h2>
+                <p>{% trans "Better knowledge. Higher productivity. Greater income." %}</p>
+                <a class="dairy-home__button dairy-home__button--gold" href="{% url 'dairys:marketplace' %}">
+                    {% trans "Find a Consultant" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+        <div class="dairy-home__consultancy">
+            <h2><i class="fas fa-handshake-angle" aria-hidden="true"></i> {% trans "Dairy Farm Consultancy" %}</h2>
+            <ul>
+                <li><i class="fas fa-circle-check" aria-hidden="true"></i> {% trans "Expert advice on modern dairy farming" %}</li>
+                <li><i class="fas fa-circle-check" aria-hidden="true"></i> {% trans "Nutrition and herd management" %}</li>
+                <li><i class="fas fa-circle-check" aria-hidden="true"></i> {% trans "Disease prevention and animal health" %}</li>
+                <li><i class="fas fa-circle-check" aria-hidden="true"></i> {% trans "Farm business planning and support" %}</li>
+            </ul>
+            <a class="dairy-home__button dairy-home__button--green" href="{% url 'dairys:marketplace' %}#dairy-services">
+                {% trans "Get Consultation" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+    </section>
+
+    {% if featured_products %}
+    <section class="dairy-home__products" aria-labelledby="dairy-products-title">
+        <div class="dairy-home__section-heading">
+            <div>
+                <p class="dairy-home__eyebrow">{% trans "Selected from local farms" %}</p>
+                <h2 id="dairy-products-title">{% trans "Featured dairy products" %}</h2>
+            </div>
+            <a class="dairy-home__section-link" href="{% url 'dairys:marketplace' %}">
+                {% trans "See all products" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+        <div class="dairy-home__product-grid">
+            {% for product in featured_products %}
+            <article class="dairy-home__product-card">
+                <a class="dairy-home__product-image" href="{{ product.get_absolute_url }}">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                    {% else %}
+                    <span aria-hidden="true"><i class="fas fa-bottle-water"></i></span>
+                    {% endif %}
+                </a>
+                <div class="dairy-home__product-info">
+                    <p>{{ product.category.name }} · {{ product.location }}</p>
+                    <h3><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
+                    <strong>{{ product.display_price }}</strong>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if featured_services %}
+    <section class="dairy-home__community" aria-labelledby="dairy-community-title">
+        <div class="dairy-home__community-copy">
+            <p class="dairy-home__eyebrow">{% trans "Grow together" %}</p>
+            <h2 id="dairy-community-title">{% trans "Expert support for every dairy farm" %}</h2>
+            <p>{% trans "Connect with experienced service providers and get practical help for your herd, equipment and daily operations." %}</p>
+            <a class="dairy-home__button dairy-home__button--green" href="{% url 'dairys:marketplace' %}#dairy-services">
+                {% trans "Explore farm services" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+        <div class="dairy-home__community-list">
+            {% for service in featured_services %}
+            <a class="dairy-home__community-item" href="{{ service.get_absolute_url }}">
+                <span class="dairy-home__community-icon"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i></span>
+                <span>
+                    <small>{{ service.get_service_type_display }} · {{ service.location }}</small>
+                    <strong>{{ service.name }}</strong>
+                </span>
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</main>
+{% endblock %}

@@ -1,4 +1,4 @@
-# project/Clothings/models.py
+# project/Dairys/models.py
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.contrib.contenttypes.fields import GenericRelation
 from cart.models import CartItem
 
-class ClothingCategory(models.Model):
+class DairyCategory(models.Model):
     GENDER_CHOICES = [
         ('M', 'Men'),
         ('W', 'Women'),
@@ -27,8 +27,8 @@ class ClothingCategory(models.Model):
     def __str__(self):
         return f"{self.get_gender_display()} - {self.name}"
 
-class ClothingItem(models.Model): 
-    category = models.ForeignKey(ClothingCategory, on_delete=models.CASCADE, related_name='items')
+class DairyItem(models.Model): 
+    category = models.ForeignKey(DairyCategory, on_delete=models.CASCADE, related_name='items')
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     description = models.TextField()
@@ -47,7 +47,7 @@ class ClothingItem(models.Model):
     )
     liked_by = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
-        related_name='liked_clothings',
+        related_name='liked_dairys',
         blank=True
     )
 
@@ -80,7 +80,7 @@ class ClothingItem(models.Model):
         return f"{self.name} ({self.category})"
 
     def get_absolute_url(self):
-        return reverse("clothings:clothing_detail", kwargs={"slug": self.slug})
+        return reverse("dairys:dairy_detail", kwargs={"slug": self.slug})
 
     @property
     def current_price(self):
@@ -91,14 +91,14 @@ class ClothingItem(models.Model):
         return self.discount_price is not None
     cart_items = GenericRelation(CartItem, content_type_field='content_type', object_id_field='object_id')
 
-class ClothingImage(models.Model):
-    clothing = models.ForeignKey(ClothingItem, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='clothing_images/')
+class DairyImage(models.Model):
+    dairys = models.ForeignKey(DairyItem, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='dairy_images/')
     is_main = models.BooleanField(default=False)
     alt_text = models.CharField(max_length=100, blank=True)
     
     def __str__(self):
-        return f"Image for {self.clothing.name}"
+        return f"Imafge for {self.dairys.name}"
 
 
 class DairyCategory(models.Model):
@@ -175,7 +175,7 @@ class DairyProduct(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("clothings:clothing_detail", kwargs={"slug": self.slug})
+        return reverse("dairys:product_detail", kwargs={"slug": self.slug})
 
     @property
     def display_price(self):
@@ -242,4 +242,4 @@ class DairyService(models.Model):
         return f"{self.name} - {self.provider.username}"
 
     def get_absolute_url(self):
-        return reverse("clothings:dairy_service_detail", kwargs={"slug": self.slug})
+        return reverse("dairys:dairy_service_detail", kwargs={"slug": self.slug})
