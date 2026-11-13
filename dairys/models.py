@@ -27,7 +27,7 @@ class DairyCategory(models.Model):
     def __str__(self):
         return f"{self.get_gender_display()} - {self.name}"
 
-class DairyItem(models.Model): 
+class DairyCategory(models.Model): 
     category = models.ForeignKey(DairyCategory, on_delete=models.CASCADE, related_name='items')
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
@@ -92,7 +92,7 @@ class DairyItem(models.Model):
     cart_items = GenericRelation(CartItem, content_type_field='content_type', object_id_field='object_id')
 
 class DairyImage(models.Model):
-    dairys = models.ForeignKey(DairyItem, related_name='images', on_delete=models.CASCADE)
+    dairys = models.ForeignKey(DairyCategory, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='dairy_images/')
     is_main = models.BooleanField(default=False)
     alt_text = models.CharField(max_length=100, blank=True)

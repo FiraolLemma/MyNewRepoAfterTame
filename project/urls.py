@@ -64,9 +64,9 @@ urlpatterns += i18n_patterns(
     path('contact/', include('contact.urls' , namespace='contact')),
     path('companies/', include('companies.urls')),
     path('dairys/', include('dairys.urls', namespace='dairys')),
-    path('dairys/', include('dairys.urls', namespace='clothings')),
+    path('dairys/', include('dairys.urls', namespace='dairys')),
     path(
-        'clothings/',
+        'dairys/',
         RedirectView.as_view(
             pattern_name='dairys:marketplace',
             permanent=True,
