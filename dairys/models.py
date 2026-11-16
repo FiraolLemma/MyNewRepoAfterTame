@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.contrib.contenttypes.fields import GenericRelation
 from cart.models import CartItem
 
-class DairyCategory(models.Model):
+class DairyItemCategory(models.Model):
     GENDER_CHOICES = [
         ('M', 'Men'),
         ('W', 'Women'),
@@ -28,7 +28,7 @@ class DairyCategory(models.Model):
         return f"{self.get_gender_display()} - {self.name}"
 
 class DairyItem(models.Model): 
-    category = models.ForeignKey(DairyCategory, on_delete=models.CASCADE, related_name='items')
+    category = models.ForeignKey(DairyItemCategory, on_delete=models.CASCADE, related_name='items')
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     description = models.TextField()
@@ -92,7 +92,7 @@ class DairyItem(models.Model):
     cart_items = GenericRelation(CartItem, content_type_field='content_type', object_id_field='object_id')
 
 class DairyImage(models.Model):
-    dairys = models.ForeignKey(DairyCategory, related_name='images', on_delete=models.CASCADE)
+    dairys = models.ForeignKey(DairyItemCategory, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='dairy_images/')
     is_main = models.BooleanField(default=False)
     alt_text = models.CharField(max_length=100, blank=True)
