@@ -1,3 +1,4 @@
+# project/Dairys/views.py
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -6,7 +7,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
-
 from .forms import DairyProductForm, DairyServiceForm
 from .models import DairyCategory, DairyProduct, DairyService
 from users.roles import UserRole, role_required

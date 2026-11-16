@@ -27,7 +27,7 @@ class DairyCategory(models.Model):
     def __str__(self):
         return f"{self.get_gender_display()} - {self.name}"
 
-class DairyCategory(models.Model): 
+class DairyItem(models.Model): 
     category = models.ForeignKey(DairyCategory, on_delete=models.CASCADE, related_name='items')
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
