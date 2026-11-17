@@ -181,6 +181,37 @@ class PoultryAccountRelationshipTests(TestCase):
         self.assertContains(marketplace_response, farmer.phone_number)
         self.assertContains(marketplace_response, farmer.profile.email)
 
+    def test_egg_seller_card_uses_current_user_profile_details(self):
+        self.farmer.profile.phone_number = "+251911111131"
+        self.farmer.profile.profile_picture.name = "profile_pics/farm-avatar.jpg"
+        self.farmer.profile.telegram = "bishoftufarm"
+        self.farmer.profile.facebook = "bishoftufarm"
+        self.farmer.profile.instagram = "bishoftu_farm"
+        self.farmer.profile.save(
+            update_fields=(
+                "phone_number",
+                "profile_picture",
+                "telegram",
+                "facebook",
+                "instagram",
+            )
+        )
+        self.seller.phone = "+251900000000"
+        self.seller.email = "outdated@example.com"
+        self.seller.save(update_fields=("phone", "email"))
+
+        response = self.client.get(reverse("poultrys:egg_sellers"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "/media/profile_pics/farm-avatar.jpg")
+        self.assertContains(response, "tel:+251911111131")
+        self.assertContains(response, "farmer@example.com")
+        self.assertContains(response, "https://t.me/bishoftufarm")
+        self.assertContains(response, "https://facebook.com/bishoftufarm")
+        self.assertContains(response, "https://instagram.com/bishoftu_farm")
+        self.assertNotContains(response, "tel:+251900000000")
+        self.assertNotContains(response, "outdated@example.com")
+
     def test_egg_seller_edit_keeps_contact_details_from_owner_account(self):
         self.client.force_login(self.farmer)
         token = self.csrf_token_from_page(

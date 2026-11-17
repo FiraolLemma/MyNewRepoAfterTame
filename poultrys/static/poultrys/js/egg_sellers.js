@@ -1,75 +1,87 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const orderButtons = document.querySelectorAll('.order-btn');
+document.addEventListener('DOMContentLoaded', function () {
     const orderModal = document.getElementById('orderModal');
+    const deleteModal = document.getElementById('deleteEggModal');
     const orderForm = document.getElementById('orderForm');
-    const closeModal = document.querySelector('.close-modal');
+    const notificationArea = document.querySelector('.seller-notifications');
+    const deleteName = document.getElementById('eggSellerName');
+    const confirmDelete = document.getElementById('confirmEggDelete');
+    let activeModal = null;
+    let selectedSellerId = null;
+    let selectedDeleteUrl = null;
 
-    const eggDeleteButtons = document.querySelectorAll('.btn-delete');
-    const eggDeleteModal = document.getElementById('deleteEggModal');
-    const eggSellerNameSpan = document.getElementById('eggSellerName');
-    const confirmEggDeleteBtn = document.getElementById('confirmEggDelete');
-    const cancelEggDeleteBtn = document.getElementById('cancelEggDelete');
-    const closeEggModalBtn = eggDeleteModal.querySelector('.close');
-
-    const searchInput = document.getElementById('sellerSearch');
-    const locationFilter = document.getElementById('locationFilter');
-    const filterBtn = document.getElementById('filterBtn');
-
-    let currentEggSellerId = null;
-    let currentDeleteUrl = null;
-
-    // ---- Order Modal ----
-    orderButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const sellerId = this.dataset.sellerId;
-            document.getElementById('modalSellerId').value = sellerId;
-            orderModal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
+    document.querySelectorAll('.order-btn').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const sellerId = document.getElementById('modalSellerId');
+            if (!orderModal || !sellerId) return;
+            sellerId.value = button.dataset.sellerId;
+            showModal(orderModal);
         });
     });
 
-    if (closeModal) {
-        closeModal.addEventListener('click', closeOrderModal);
-    }
-
-    window.addEventListener('click', function(event) {
-        if (event.target === orderModal) closeOrderModal();
-        if (event.target === eggDeleteModal) closeEggModal();
+    document.querySelectorAll('.btn-delete').forEach(function (button) {
+        button.addEventListener('click', function () {
+            if (!deleteModal || !deleteName) return;
+            deleteName.textContent = button.dataset.sellerName || '';
+            showModal(deleteModal);
+            selectedSellerId = button.dataset.sellerId;
+            selectedDeleteUrl = button.dataset.deleteUrl;
+        });
     });
 
-    function closeOrderModal() {
-        orderModal.style.display = 'none';
+    document.querySelectorAll('.close-modal, .close, #cancelEggDelete').forEach(function (button) {
+        button.addEventListener('click', closeActiveModal);
+    });
+
+    [orderModal, deleteModal].forEach(function (modal) {
+        if (!modal) return;
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) closeActiveModal();
+        });
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') closeActiveModal();
+    });
+
+    if (confirmDelete) {
+        confirmDelete.addEventListener('click', function () {
+            if (selectedSellerId && selectedDeleteUrl) {
+                deleteSeller(selectedSellerId, selectedDeleteUrl);
+            }
+        });
+    }
+
+    if (orderForm) {
+        orderForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            submitOrder(orderForm);
+        });
+    }
+
+    function showModal(modal) {
+        if (activeModal) closeActiveModal();
+        activeModal = modal;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        const firstInput = modal.querySelector('input:not([type="hidden"]), button');
+        if (firstInput) firstInput.focus();
+    }
+
+    function closeActiveModal() {
+        if (!activeModal) return;
+        activeModal.classList.remove('is-open');
+        activeModal.setAttribute('aria-hidden', 'true');
+        activeModal = null;
+        selectedSellerId = null;
+        selectedDeleteUrl = null;
         document.body.style.overflow = '';
     }
 
-    // ---- Delete Modal ----
-    eggDeleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            currentEggSellerId = this.dataset.sellerId;
-            currentDeleteUrl = this.dataset.deleteUrl;  // ✅ Django-generated URL
-            const sellerName = this.dataset.sellerName;
-            eggSellerNameSpan.textContent = sellerName;
-            eggDeleteModal.style.display = 'block';
-        });
-    });
-
-    confirmEggDeleteBtn.addEventListener('click', function() {
-        if (currentEggSellerId && currentDeleteUrl) {
-            deleteEggSeller(currentEggSellerId, currentDeleteUrl);
-        }
-    });
-    cancelEggDeleteBtn.addEventListener('click', closeEggModal);
-    closeEggModalBtn.addEventListener('click', closeEggModal);
-
-    function closeEggModal() {
-        eggDeleteModal.style.display = 'none';
-        currentEggSellerId = null;
-        currentDeleteUrl = null;
-    }
-
-    // ---- Delete Request ----
-    function deleteEggSeller(sellerId, deleteUrl) {
-        const csrfToken = getCookie('csrftoken');
+    function deleteSeller(sellerId, deleteUrl) {
+        const button = document.querySelector('.btn-delete[data-seller-id="' + sellerId + '"]');
+        const csrfToken = getCsrfToken();
+        if (confirmDelete) confirmDelete.disabled = true;
 
         fetch(deleteUrl, {
             method: 'POST',
@@ -78,110 +90,100 @@ document.addEventListener('DOMContentLoaded', function() {
                 'X-CSRFToken': csrfToken
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.querySelector(`.btn-delete[data-seller-id="${sellerId}"]`)
-                    ?.closest('.seller-card')
-                    ?.remove();
+            .then(readJsonResponse)
+            .then(function (data) {
+                if (!data.success) {
+                    throw new Error(data.error || 'Unable to delete this egg seller.');
+                }
+                const card = button ? button.closest('.seller-card') : null;
+                if (card) card.remove();
                 showNotification(data.message, 'success');
-            } else {
-                showNotification('Error: ' + data.error, 'error');
-            }
-        })
-        .catch(() => showNotification('Error deleting egg seller', 'error'))
-        .finally(closeEggModal);
+                closeActiveModal();
+            })
+            .catch(function (error) {
+                showNotification(error.message || 'Error deleting egg seller.', 'error');
+            })
+            .finally(function () {
+                if (confirmDelete) confirmDelete.disabled = false;
+            });
     }
 
-    // ---- Order Form Submit ----
-    if (orderForm) {
-        orderForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            submitOrderForm(this);
-        });
-    }
-
-    function submitOrderForm(form) {
-        const submitBtn = form.querySelector('.submit-btn');
-        const originalText = submitBtn.textContent;
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Processing...';
-
+    function submitOrder(form) {
+        const submitButton = form.querySelector('.submit-btn');
+        const originalText = submitButton ? submitButton.textContent : '';
         const formData = new FormData(form);
-        const jsonData = Object.fromEntries(formData.entries());
+        const payload = {};
+        formData.forEach(function (value, key) {
+            payload[key] = value;
+        });
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processing...';
+        }
 
         fetch(form.action, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': jsonData.csrfmiddlewaretoken,
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken') || getCsrfToken(),
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify(jsonData)
+            body: JSON.stringify(payload)
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(data.message, 'success');
-                closeOrderModal();
-                form.reset();
-            } else {
-                showNotification(data.message || 'Please check your input', 'error');
-            }
-        })
-        .catch(() => showNotification('An error occurred. Please try again.', 'error'))
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-        });
-    }
-
-    // ---- Search & Filter ----
-    filterBtn.addEventListener('click', function() {
-        const searchValue = searchInput.value.toLowerCase();
-        const locationValue = locationFilter.value.toLowerCase();
-        filterSellers(searchValue, locationValue);
-    });
-
-    searchInput.addEventListener('input', function() {
-        filterSellers(this.value.toLowerCase(), locationFilter.value.toLowerCase());
-    });
-
-    function filterSellers(searchTerm, locationTerm) {
-        const sellers = document.querySelectorAll('.seller-card');
-        sellers.forEach(seller => {
-            const name = seller.querySelector('h3').textContent.toLowerCase();
-            const location = seller.querySelector('p strong')?.nextSibling?.textContent?.toLowerCase() || '';
-            const matchesSearch = name.includes(searchTerm);
-            const matchesLocation = !locationTerm || location.includes(locationTerm);
-            seller.style.display = matchesSearch && matchesLocation ? '' : 'none';
-        });
-    }
-
-    // ---- Helper: Notification ----
-    function showNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-
-        setTimeout(() => notification.remove(), 4000);
-    }
-  
-    // ---- Helper: CSRF ----
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let c of cookies) {
-                const cookie = c.trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+            .then(readJsonResponse)
+            .then(function (data) {
+                if (!data.success) {
+                    const firstError = data.errors
+                        ? Object.values(data.errors).flat().map(function (error) {
+                            return typeof error === 'string' ? error : error.message;
+                        }).filter(Boolean).join(' ')
+                        : data.message;
+                    throw new Error(firstError || 'Please check your order details.');
                 }
+                showNotification(data.message, 'success');
+                form.reset();
+                closeActiveModal();
+            })
+            .catch(function (error) {
+                showNotification(error.message || 'An error occurred. Please try again.', 'error');
+            })
+            .finally(function () {
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalText;
+                }
+            });
+    }
+
+    function readJsonResponse(response) {
+        return response.json().then(function (data) {
+            if (!response.ok) {
+                const message = data.message || data.error || 'The request could not be completed.';
+                throw new Error(message);
             }
-        }
-        return cookieValue;
+            return data;
+        });
+    }
+
+    function showNotification(message, type) {
+        if (!notificationArea) return;
+        const notification = document.createElement('div');
+        notification.className = 'notification ' + type;
+        notification.textContent = message;
+        notificationArea.appendChild(notification);
+        window.setTimeout(function () {
+            notification.remove();
+        }, 4500);
+    }
+
+    function getCsrfToken() {
+        const csrfInput = document.querySelector('#orderForm [name="csrfmiddlewaretoken"]');
+        if (csrfInput) return csrfInput.value;
+        const csrfCookie = document.cookie.split(';').map(function (cookie) {
+            return cookie.trim();
+        }).find(function (cookie) {
+            return cookie.indexOf('csrftoken=') === 0;
+        });
+        return csrfCookie ? decodeURIComponent(csrfCookie.slice('csrftoken='.length)) : '';
     }
 });

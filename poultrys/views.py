@@ -291,6 +291,10 @@ def egg_sellers(request):
     context = {
         'sellers': sellers,
         'filter_form': form,
+        'can_view_egg_orders': (
+            request.user.is_authenticated
+            and EggSeller.objects.filter(user=request.user).exists()
+        ),
         'can_add_egg_seller': has_any_role(
             request.user,
             UserRole.ADMIN,
