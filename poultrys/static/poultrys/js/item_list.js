@@ -43,8 +43,7 @@ async function toggleLike(itemId, button) {
             } else {
                 button.classList.remove('liked');
             }
-            
-            button.classList.toggle('liked');
+            button.setAttribute('aria-pressed', String(data.has_liked));
             button.style.backgroundColor = '#e3f2fd';
             setTimeout(() => {
                 button.style.backgroundColor = '';

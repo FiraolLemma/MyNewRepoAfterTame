@@ -5,7 +5,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const notificationArea = document.querySelector('.seller-notifications');
     const deleteName = document.getElementById('eggSellerName');
     const confirmDelete = document.getElementById('confirmEggDelete');
+    const quantityInput = document.getElementById('quantity');
+    const minimumOrderHint = document.getElementById('minimumOrderHint');
     let activeModal = null;
+    let returnFocusTo = null;
     let selectedSellerId = null;
     let selectedDeleteUrl = null;
 
@@ -14,6 +17,15 @@ document.addEventListener('DOMContentLoaded', function () {
             const sellerId = document.getElementById('modalSellerId');
             if (!orderModal || !sellerId) return;
             sellerId.value = button.dataset.sellerId;
+            const minimumOrder = Number(button.dataset.minimumOrder) || 1;
+            if (quantityInput) {
+                quantityInput.min = String(minimumOrder);
+                quantityInput.value = String(minimumOrder);
+            }
+            if (minimumOrderHint) {
+                minimumOrderHint.textContent = button.dataset.minimumLabel + ': ' +
+                    minimumOrder + ' ' + button.dataset.dozenLabel;
+            }
             showModal(orderModal);
         });
     });
@@ -60,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showModal(modal) {
         if (activeModal) closeActiveModal();
+        returnFocusTo = document.activeElement;
         activeModal = modal;
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
@@ -76,6 +89,10 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedSellerId = null;
         selectedDeleteUrl = null;
         document.body.style.overflow = '';
+        if (returnFocusTo && typeof returnFocusTo.focus === 'function') {
+            returnFocusTo.focus();
+        }
+        returnFocusTo = null;
     }
 
     function deleteSeller(sellerId, deleteUrl) {
@@ -118,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         if (submitButton) {
             submitButton.disabled = true;
-            submitButton.textContent = 'Processing...';
+            submitButton.textContent = submitButton.dataset.processingLabel || 'Processing...';
         }
 
         fetch(form.action, {

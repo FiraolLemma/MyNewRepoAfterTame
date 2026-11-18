@@ -1,57 +1,77 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const table = document.querySelector(".orders-table");
-    const headers = table.querySelectorAll("th");
-    const rows = table.querySelectorAll("tbody tr");
+document.addEventListener('DOMContentLoaded', function () {
+    const table = document.querySelector('.orders-table');
+    if (!table) return;
 
-    // ---------- Sorting ----------
-    headers.forEach((header, index) => {
-        header.addEventListener("click", () => {
-            const rowsArray = Array.from(rows);
-            const isAscending = header.classList.contains("asc");
+    const searchInput = document.getElementById('orderSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const noResults = document.querySelector('.orders-no-results');
+    const body = table.querySelector('tbody');
+    const headers = table.querySelectorAll('.sort-button');
 
-            rowsArray.sort((a, b) => {
-                const aText = a.children[index].innerText.trim();
-                const bText = b.children[index].innerText.trim();
+    function filterOrders() {
+        const query = searchInput ? searchInput.value.trim().toLocaleLowerCase() : '';
+        const status = statusFilter ? statusFilter.value : '';
+        let visibleCount = 0;
 
-                if (!isNaN(aText) && !isNaN(bText)) {
-                    return isAscending
-                        ? bText - aText
-                        : aText - bText;
-                }
-                return isAscending
-                    ? bText.localeCompare(aText)
-                    : aText.localeCompare(bText);
-            });
-
-            // Reorder rows
-            rowsArray.forEach(row => table.querySelector("tbody").appendChild(row));
-
-            headers.forEach(h => h.classList.remove("asc", "desc"));
-            header.classList.toggle(isAscending ? "desc" : "asc");
+        body.querySelectorAll('tr').forEach(function (row) {
+            const matchesQuery = !query || row.textContent.toLocaleLowerCase().includes(query);
+            const matchesStatus = !status || row.dataset.orderStatus === status;
+            const isVisible = matchesQuery && matchesStatus;
+            row.hidden = !isVisible;
+            if (isVisible) visibleCount += 1;
         });
-    });
 
-    // ---------- Mobile Data Labels ----------
-    if (window.innerWidth <= 768) {
-        const headLabels = Array.from(headers).map(h => h.innerText);
-        rows.forEach(row => {
-            row.querySelectorAll("td").forEach((td, i) => {
-                td.setAttribute("data-label", headLabels[i]);
-            });
-        });
+        if (noResults) noResults.hidden = visibleCount > 0;
     }
 
-    // ---------- Search (optional) ----------
-    const searchBox = document.createElement("input");
-    searchBox.type = "text";
-    searchBox.placeholder = "Search orders...";
-    searchBox.className = "order-search";
-    document.querySelector(".orders-page").insertBefore(searchBox, table);
+    if (searchInput) searchInput.addEventListener('input', filterOrders);
+    if (statusFilter) statusFilter.addEventListener('change', filterOrders);
 
-    searchBox.addEventListener("keyup", () => {
-        const query = searchBox.value.toLowerCase();
-        rows.forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(query) ? "" : "none";
+    headers.forEach(function (button) {
+        button.addEventListener('click', function () {
+            const header = button.closest('th');
+            const columnIndex = Array.from(header.parentElement.children).indexOf(header);
+            const rows = Array.from(body.querySelectorAll('tr'));
+            const ascending = button.dataset.direction !== 'ascending';
+            const sortType = button.dataset.sort;
+
+            rows.sort(function (left, right) {
+                const leftCell = left.children[columnIndex];
+                const rightCell = right.children[columnIndex];
+                let leftValue;
+                let rightValue;
+
+                if (sortType === 'date') {
+                    leftValue = Number(leftCell.dataset.orderTimestamp) || 0;
+                    rightValue = Number(rightCell.dataset.orderTimestamp) || 0;
+                } else if (sortType === 'number') {
+                    leftValue = parseFloat(leftCell.textContent.replace(/[^\d.-]/g, '')) || 0;
+                    rightValue = parseFloat(rightCell.textContent.replace(/[^\d.-]/g, '')) || 0;
+                } else {
+                    leftValue = leftCell.textContent.trim().toLocaleLowerCase();
+                    rightValue = rightCell.textContent.trim().toLocaleLowerCase();
+                }
+
+                if (leftValue < rightValue) return ascending ? -1 : 1;
+                if (leftValue > rightValue) return ascending ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(function (row) {
+                body.appendChild(row);
+            });
+
+            headers.forEach(function (otherButton) {
+                otherButton.removeAttribute('data-direction');
+                otherButton.classList.remove('is-sorted');
+                const icon = otherButton.querySelector('i');
+                if (icon) icon.className = 'fas fa-sort';
+            });
+            button.dataset.direction = ascending ? 'ascending' : 'descending';
+            button.classList.add('is-sorted');
+            const icon = button.querySelector('i');
+            if (icon) icon.className = ascending ? 'fas fa-sort-up' : 'fas fa-sort-down';
+            filterOrders();
         });
     });
 });

@@ -2,50 +2,98 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}
-    {% trans " MY Egg Orders | Ethiopian Sheger Market place" %}
-{% endblock %}
+{% block title %}{% trans "Egg orders | Sheger Market" %}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'poultrys/css/egg_seller_orders.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="orders-page">
+<main class="orders-page">
+    <a href="{% url 'poultrys:egg_sellers' %}" class="orders-back-link">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> {% trans "Back to egg farms" %}
+    </a>
 
-    <a href="{% url 'poultrys:egg_sellers' %}" class="back-to-home">
-            <i class="fas fa-arrow-left"></i> {% trans "Back" %}
-        </a>
+    <header class="orders-heading">
+        <div>
+            <span class="eyebrow"><i class="fas fa-clipboard-list" aria-hidden="true"></i> {% trans "Seller dashboard" %}</span>
+            <h1>{% trans "Your egg orders" %}</h1>
+            <p>{% trans "Review customer requests and delivery details for your farm." %}</p>
+        </div>
+        <div class="orders-count"><strong>{{ orders|length }}</strong><span>{% trans "total orders" %}</span></div>
+    </header>
 
-        
-    <h2>My Egg Orders</h2>
-    <table class="orders-table">
-        <thead>
-            <tr>
-                <th>Customer</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Quantity</th>
-                <th>Total Price</th>
-                <th>Date</th>
-            </tr> 
-        </thead>
-        <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>{{ order.customer_name }}</td>
-                <td>{{ order.customer_email }}</td>
-                <td>{{ order.customer_phone }}</td>
-                <td>{{ order.quantity }}</td>
-                <td>{{ order.total_price }}</td>
-                <td>{{ order.order_date|date:"M d, Y H:i" }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="6">No orders yet.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+    <section class="orders-panel" aria-label="{% trans 'Egg orders' %}">
+        <div class="orders-toolbar">
+            <div class="orders-search">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <label class="sr-only" for="orderSearch">{% trans "Search orders" %}</label>
+                <input id="orderSearch" type="search" placeholder="{% trans 'Search customer, phone or order...' %}" autocomplete="off">
+            </div>
+            <div class="orders-filter">
+                <label class="sr-only" for="statusFilter">{% trans "Filter by status" %}</label>
+                <select id="statusFilter">
+                    <option value="">{% trans "All statuses" %}</option>
+                    <option value="pending">{% trans "Pending" %}</option>
+                    <option value="confirmed">{% trans "Confirmed" %}</option>
+                    <option value="processing">{% trans "Processing" %}</option>
+                    <option value="shipped">{% trans "Shipped" %}</option>
+                    <option value="delivered">{% trans "Delivered" %}</option>
+                    <option value="cancelled">{% trans "Cancelled" %}</option>
+                </select>
+            </div>
+        </div>
+
+        {% if orders %}
+            <div class="orders-table-wrap">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th scope="col"><button type="button" class="sort-button" data-sort="text">{% trans "Customer" %}<i class="fas fa-sort" aria-hidden="true"></i></button></th>
+                            <th scope="col">{% trans "Contact" %}</th>
+                            <th scope="col"><button type="button" class="sort-button" data-sort="number">{% trans "Quantity" %}<i class="fas fa-sort" aria-hidden="true"></i></button></th>
+                            <th scope="col"><button type="button" class="sort-button" data-sort="number">{% trans "Total" %}<i class="fas fa-sort" aria-hidden="true"></i></button></th>
+                            <th scope="col">{% trans "Status" %}</th>
+                            <th scope="col"><button type="button" class="sort-button" data-sort="date">{% trans "Order date" %}<i class="fas fa-sort" aria-hidden="true"></i></button></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr data-order-status="{{ order.status|lower }}">
+                                <td data-label="{% trans 'Customer' %}">
+                                    <div class="customer-cell">
+                                        <span class="customer-avatar" aria-hidden="true">{{ order.customer_name|slice:":1"|upper }}</span>
+                                        <span><strong>{{ order.customer_name }}</strong><small>#{% if order.pk %}{{ order.pk }}{% endif %}</small></span>
+                                    </div>
+                                </td>
+                                <td data-label="{% trans 'Contact' %}">
+                                    <a class="order-contact" href="mailto:{{ order.customer_email }}">{{ order.customer_email }}</a>
+                                    <a class="order-contact" href="tel:{{ order.customer_phone }}">{{ order.customer_phone }}</a>
+                                </td>
+                                <td data-label="{% trans 'Quantity' %}"><strong>{{ order.quantity }}</strong> {% trans "dozen(s)" %}</td>
+                                <td data-label="{% trans 'Total' %}" class="order-total">{{ order.total_price|floatformat:2 }} <small>{% trans "birr" %}</small></td>
+                                <td data-label="{% trans 'Status' %}">
+                                    <span class="status-badge status-{{ order.status|lower }}">{{ order.get_status_display }}</span>
+                                </td>
+                                <td data-label="{% trans 'Order date' %}" data-order-timestamp="{{ order.order_date|date:'U' }}">
+                                    <time datetime="{{ order.order_date|date:'c' }}">{{ order.order_date|date:"M d, Y" }}<small>{{ order.order_date|date:"H:i" }}</small></time>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="orders-no-results" hidden>{% trans "No orders match your search." %}</div>
+            </div>
+        {% else %}
+            <div class="orders-empty">
+                <span class="empty-icon"><i class="fas fa-inbox" aria-hidden="true"></i></span>
+                <h2>{% trans "No orders yet" %}</h2>
+                <p>{% trans "When customers order from your farm, their requests will appear here." %}</p>
+                <a href="{% url 'poultrys:egg_sellers' %}" class="orders-primary-link">{% trans "View egg marketplace" %}</a>
+            </div>
+        {% endif %}
+    </section>
+</main>
 {% endblock %}
 
 {% block js %}
