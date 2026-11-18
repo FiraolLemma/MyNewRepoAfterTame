@@ -1,136 +1,173 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const sellerItems = document.querySelectorAll('.user-card');
-    const searchInput = document.getElementById('searchInput');
-    const locationFilter = document.getElementById('locationFilter');
-    const sellerList = document.getElementById('sellerList');
-    const noResults = document.querySelector('.no-results');
+document.addEventListener('DOMContentLoaded', function () {
+    const page = document.querySelector('.chicken-sellers');
+    const searchInput = document.getElementById('seller-search');
+    const locationFilter = document.getElementById('seller-location');
+    const sellerGrid = document.getElementById('sellerList');
+    const count = document.getElementById('sellerCount');
+    const emptyState = document.getElementById('sellerEmptyState');
+    const deleteModal = document.getElementById('deleteModal');
+    const sellerName = document.getElementById('sellerName');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const notificationArea = document.querySelector('.chicken-sellers__notifications');
+    let sellerCards = Array.from(document.querySelectorAll('[data-seller-card]'));
+    let selectedSellerButton = null;
+    let previousFocus = null;
+    let originalConfirmText = '';
 
-    // 🔍 Filter sellers
+    function updateCount(visibleCount) {
+        if (!count) return;
+        const number = count.querySelector('.chicken-sellers__count-number');
+        const label = count.querySelector('.chicken-sellers__count-label');
+        if (!number || !label) return;
+        number.textContent = visibleCount;
+        label.textContent = visibleCount === 1 ? count.dataset.oneLabel : count.dataset.manyLabel;
+    }
+
     function filterSellers() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const locationValue = locationFilter.value;
+        if (!sellerGrid) return;
+        const searchTerm = searchInput ? searchInput.value.trim().toLocaleLowerCase() : '';
+        const location = locationFilter ? locationFilter.value.trim().toLocaleLowerCase() : '';
         let visibleCount = 0;
 
-        sellerItems.forEach(item => {
-            const sellerText = item.textContent.toLowerCase();
-            const itemLocation = item.getAttribute('data-location');
-            const matchesSearch = sellerText.includes(searchTerm);
-            const matchesLocation = !locationValue || itemLocation === locationValue;
-
-            if (matchesSearch && matchesLocation) {
-                item.style.display = 'block';
-                visibleCount++;
-            } else {
-                item.style.display = 'none';
-            }
+        sellerCards = sellerCards.filter(function (card) {
+            return card.isConnected;
         });
 
-        if (noResults) {
-            noResults.style.display = visibleCount === 0 ? 'block' : 'none';
-        }
+        sellerCards.forEach(function (card) {
+            const searchableText = (card.dataset.search || '').toLocaleLowerCase();
+            const cardLocation = (card.dataset.location || '').toLocaleLowerCase();
+            const matchesSearch = !searchTerm || searchableText.includes(searchTerm);
+            const matchesLocation = !location || cardLocation === location;
+            const isVisible = matchesSearch && matchesLocation;
+            card.hidden = !isVisible;
+            if (isVisible) visibleCount += 1;
+        });
+
+        updateCount(visibleCount);
+        if (emptyState) emptyState.hidden = visibleCount !== 0;
     }
 
-    if (searchInput && locationFilter) {
+    if (searchInput) {
         searchInput.addEventListener('input', filterSellers);
+    }
+    if (locationFilter) {
         locationFilter.addEventListener('change', filterSellers);
     }
+    filterSellers();
 
-    // 🎬 Fade-in animation for cards
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = 1;
-                entry.target.style.transform = 'translateY(0)';
+    document.querySelectorAll('[data-delete-button]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            if (!deleteModal || !sellerName || !confirmDelete) return;
+            selectedSellerButton = button;
+            previousFocus = document.activeElement;
+            sellerName.textContent = button.dataset.sellerName || '';
+            originalConfirmText = confirmDelete.textContent;
+            deleteModal.classList.add('is-open');
+            deleteModal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            const cancelButton = deleteModal.querySelector('[data-close-modal]');
+            if (cancelButton) cancelButton.focus();
+        });
+    });
+
+    function closeDeleteModal() {
+        if (!deleteModal) return;
+        deleteModal.classList.remove('is-open');
+        deleteModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        selectedSellerButton = null;
+        if (previousFocus && previousFocus.isConnected) {
+            previousFocus.focus();
+        }
+        previousFocus = null;
+    }
+
+    document.querySelectorAll('[data-close-modal]').forEach(function (button) {
+        button.addEventListener('click', closeDeleteModal);
+    });
+
+    if (deleteModal) {
+        deleteModal.addEventListener('click', function (event) {
+            if (event.target === deleteModal) closeDeleteModal();
+        });
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && deleteModal && deleteModal.classList.contains('is-open')) {
+            closeDeleteModal();
+        }
+    });
+
+    if (confirmDelete) {
+        confirmDelete.addEventListener('click', function () {
+            if (!selectedSellerButton || confirmDelete.disabled) return;
+
+            const deleteButton = selectedSellerButton;
+            const deleteUrl = deleteButton.dataset.deleteUrl;
+            const csrfToken = getCsrfToken();
+            if (!deleteUrl || !csrfToken) {
+                showNotification(deleteModal.dataset.errorMessage, 'error');
+                return;
             }
-        });
-    }, { threshold: 0.05 });
 
-    sellerItems.forEach(item => {
-        item.style.opacity = 0;
-        item.style.transform = 'translateY(30px)';
-        item.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(item);
-    });
+            confirmDelete.disabled = true;
+            confirmDelete.textContent = deleteModal.dataset.removingLabel;
 
-    // ✨ Social links hover effect
-    document.querySelectorAll('.social-link').forEach(link => {
-        link.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-5px) scale(1.1)';
-        });
-        link.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-        });
-    });
-
-    // 🗑 Delete modal
-    const deleteButtons = document.querySelectorAll('.btn-delete[data-seller-id]');
-    const deleteModal = document.getElementById('deleteModal');
-    const sellerNameSpan = document.getElementById('sellerName');
-    const confirmDeleteBtn = document.getElementById('confirmDelete');
-    const cancelDeleteBtn = document.getElementById('cancelDelete');
-    const closeModalBtn = document.querySelector('.close');
-
-    let currentSellerId = null;
-
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            currentSellerId = this.getAttribute('data-seller-id');
-            const sellerName = this.getAttribute('data-seller-name');
-            sellerNameSpan.textContent = sellerName;
-            deleteModal.style.display = 'block';
-        });
-    });
-
-    confirmDeleteBtn.addEventListener('click', function() {
-        if (currentSellerId) {
-            const csrfToken = getCookie('csrftoken');
-            fetch(`/delete-seller-ajax/${currentSellerId}/`, {
+            fetch(deleteUrl, {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRFToken': csrfToken
                 }
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    const sellerItem = document.querySelector(`.user-card[data-seller-id="${currentSellerId}"]`);
-                    if (sellerItem) sellerItem.remove();
-                    alert('Seller deleted successfully!');
-                } else {
-                    alert('Error deleting seller: ' + data.error);
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('Error deleting seller');
-            })
-            .finally(() => {
-                deleteModal.style.display = 'none';
-                currentSellerId = null;
-            });
-        }
-    });
-
-    function closeModal() {
-        deleteModal.style.display = 'none';
-        currentSellerId = null;
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        if (!response.ok || !data.success) {
+                            throw new Error(data.error || deleteModal.dataset.errorMessage);
+                        }
+                        return data;
+                    });
+                })
+                .then(function () {
+                    const card = deleteButton.closest('[data-seller-card]');
+                    if (card) card.remove();
+                    filterSellers();
+                    closeDeleteModal();
+                    showNotification(deleteModal.dataset.successMessage, 'success');
+                })
+                .catch(function (error) {
+                    showNotification(error.message || deleteModal.dataset.errorMessage, 'error');
+                })
+                .finally(function () {
+                    confirmDelete.disabled = false;
+                    confirmDelete.textContent = originalConfirmText;
+                });
+        });
     }
 
-    cancelDeleteBtn.addEventListener('click', closeModal);
-    closeModalBtn.addEventListener('click', closeModal);
-    window.addEventListener('click', e => { if (e.target === deleteModal) closeModal(); });
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie) {
-            document.cookie.split(';').forEach(cookie => {
-                cookie = cookie.trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                }
-            });
+    function getCsrfToken() {
+        const cookieToken = document.cookie.split(';').map(function (cookie) {
+            return cookie.trim();
+        }).find(function (cookie) {
+            return cookie.indexOf('csrftoken=') === 0;
+        });
+        if (cookieToken) {
+            return decodeURIComponent(cookieToken.slice('csrftoken='.length));
         }
-        return cookieValue;
+        return page ? page.dataset.csrfToken : '';
+    }
+
+    function showNotification(message, type) {
+        if (!notificationArea || !message) return;
+        const notification = document.createElement('div');
+        notification.className = 'chicken-sellers__notification';
+        if (type === 'error') {
+            notification.classList.add('chicken-sellers__notification--error');
+        }
+        notification.textContent = message;
+        notificationArea.appendChild(notification);
+        window.setTimeout(function () {
+            notification.remove();
+        }, 4500);
     }
 });

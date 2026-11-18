@@ -3,7 +3,11 @@
 {% load i18n %}
 
 {% block title %}
-    {% trans "Create Poultry Item | Ethiopian Sheger Market place" %}
+    {% if form.instance.pk %}
+        {% trans "Edit Poultry Item | Ethiopian Sheger Market place" %}
+    {% else %}
+        {% trans "Create Poultry Item | Ethiopian Sheger Market place" %}
+    {% endif %}
 {% endblock %}
 
 {% block css %}
@@ -11,124 +15,216 @@
 {% endblock %}
 
 {% block content %}
-<div class="item-create-wrapper">
-    <div class="item-form-container">
-        <div class="form-header">
-            <div class="form-header-content">
-                <h1 class="item-form-title">{% trans "Create New Item" %}</h1>
-                <p class="form-subtitle">{% trans "Fill in the details below to add a new item to your collection" %}</p>
+<main class="item-create">
+    <header class="item-create__hero">
+        <div class="item-create__hero-inner">
+            <nav class="item-create__breadcrumbs" aria-label="{% trans 'Breadcrumb' %}">
+                <a href="{% url 'poultrys:index' %}">{% trans "Home" %}</a>
+                <span aria-hidden="true">/</span>
+                <a href="{% url 'poultrys:item_list' %}">{% trans "Poultry items" %}</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">
+                    {% if form.instance.pk %}{% trans "Edit item" %}{% else %}{% trans "Add an item" %}{% endif %}
+                </span>
+            </nav>
+
+            <div class="item-create__hero-copy">
+                <span class="item-create__eyebrow">{% trans "Poultry marketplace" %}</span>
+                <h1>
+                    {% if form.instance.pk %}
+                        {% trans "Update your" %} <span>{% trans "listing" %}</span>
+                    {% else %}
+                        {% trans "Bring your" %} <span>{% trans "poultry products" %}</span> {% trans "to market" %}
+                    {% endif %}
+                </h1>
+                <p>{% trans "Share the details, set your price, and help buyers find quality poultry products from local farms." %}</p>
+            </div>
+
+            <div class="item-create__hero-art" aria-hidden="true">
+                <span class="item-create__hero-orbit item-create__hero-orbit--one"></span>
+                <span class="item-create__hero-orbit item-create__hero-orbit--two"></span>
+                <svg viewBox="0 0 160 160" role="presentation">
+                    <path d="M37 108c0-25 16-43 41-43 7-19 31-23 45-10 9 9 9 23 3 32 10 5 17 15 17 27 0 19-16 32-42 32H68c-19 0-31-15-31-38Z" fill="currentColor" opacity=".96"/>
+                    <path d="M104 56c3-13 13-21 25-22-2 12-10 21-23 25" fill="#ffd900"/>
+                    <path d="m140 75 17 8-17 8" fill="#ffd900"/>
+                    <circle cx="126" cy="68" r="3" fill="#123d2c"/>
+                    <path d="M44 101c16-16 38-18 54-5-8 17-28 25-47 20" fill="#a6d9a8"/>
+                    <path d="M69 143v12m31-12v12m-38 0h17m13 0h17" fill="none" stroke="#ffd900" stroke-linecap="round" stroke-width="6"/>
+                </svg>
             </div>
         </div>
+    </header>
 
-        <form method="post" enctype="multipart/form-data" class="item-form" id="itemForm">
-            {% csrf_token %}
+    <div class="item-create__layout">
+        <section class="item-create__form-card" aria-labelledby="item-form-heading">
+            <div class="item-create__card-heading">
+                <div>
+                    <span class="item-create__step-label">{% trans "Seller workspace" %}</span>
+                    <h2 id="item-form-heading">
+                        {% if form.instance.pk %}{% trans "Edit item details" %}{% else %}{% trans "Create a listing" %}{% endif %}
+                    </h2>
+                </div>
+                <span class="item-create__required-note"><span aria-hidden="true">*</span> {% trans "Required fields" %}</span>
+            </div>
 
-            <div class="form-sections">
-                <div class="form-section">
-                    <h3 class="section-title">
-                        <span class="section-icon">🐔</span>
-                        {% trans "Basic Information" %}
-                    </h3>
+            {% if form.non_field_errors %}
+                <div class="item-create__form-errors" role="alert">
+                    {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
 
-                    <div class="form-grid">
+            <form method="post" enctype="multipart/form-data" class="item-create__form" id="itemForm">
+                {% csrf_token %}
+
+                <fieldset class="item-create__section">
+                    <legend>
+                        <span class="item-create__section-number">01</span>
+                        <span>
+                            <strong>{% trans "Item information" %}</strong>
+                            <small>{% trans "Give buyers the essential details." %}</small>
+                        </span>
+                    </legend>
+
+                    <div class="item-create__field-grid">
                         {% for field in form %}
-                            {% if field.name != "sub_images" and field.name != "description" %}
-                                <div class="form-group">
+                            {% if field.name != "sub_images" and field.name != "description" and field.name != "main_image" %}
+                                <div class="item-create__field{% if field.errors %} has-errors{% endif %}">
                                     {{ field.label_tag }}
-
-                                    {% if field.errors %}
-                                        <ul class="errorlist">
-                                            {% for error in field.errors %}
-                                                <li>{{ error }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    {% endif %}
-
                                     {{ field }}
-
-                                    {% if field.help_text %}
-                                        <small class="help-text">{{ field.help_text }}</small>
+                                    {% if field.help_text %}<small class="item-create__help">{{ field.help_text }}</small>{% endif %}
+                                    {% if field.errors %}
+                                        <ul class="item-create__errors" role="alert">
+                                            {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                                        </ul>
                                     {% endif %}
                                 </div>
                             {% endif %}
                         {% endfor %}
                     </div>
-                </div>
+                </fieldset>
 
-                <div class="form-section">
-                    <h3 class="section-title">
-                        <span class="section-icon">📝</span>
-                        {% trans "Description" %}
-                    </h3>
+                <fieldset class="item-create__section">
+                    <legend>
+                        <span class="item-create__section-number">02</span>
+                        <span>
+                            <strong>{% trans "Description" %}</strong>
+                            <small>{% trans "Tell customers what makes this item a great choice." %}</small>
+                        </span>
+                    </legend>
 
-                    <div class="form-group full-width">
+                    <div class="item-create__field{% if form.description.errors %} has-errors{% endif %}">
                         {{ form.description.label_tag }}
                         {{ form.description }}
-                        <div class="char-counter">0 characters</div>
-
+                        <div class="item-create__field-meta">
+                            <small class="item-create__help">{% trans "Include useful details such as breed, freshness, or how the item was raised." %}</small>
+                            <span
+                                class="item-create__char-counter"
+                                data-singular="{% trans 'character' %}"
+                                data-plural="{% trans 'characters' %}"
+                                aria-live="polite"
+                            >0 {% trans "characters" %}</span>
+                        </div>
                         {% if form.description.errors %}
-                            <ul class="errorlist">
-                                {% for error in form.description.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
+                            <ul class="item-create__errors" role="alert">
+                                {% for error in form.description.errors %}<li>{{ error }}</li>{% endfor %}
                             </ul>
                         {% endif %}
-
-                        <small class="help-text">
-                            {% trans "Provide detailed information about your item" %}
-                        </small>
                     </div>
-                </div>
+                </fieldset>
 
-                <div class="form-section">
-                    <h3 class="section-title">
-                        <span class="section-icon">🖼️</span>
-                        {% trans "Images" %}
-                    </h3>
+                <fieldset class="item-create__section item-create__images-section">
+                    <legend>
+                        <span class="item-create__section-number">03</span>
+                        <span>
+                            <strong>{% trans "Product photos" %}</strong>
+                            <small>{% trans "Clear photos help your listing stand out." %}</small>
+                        </span>
+                    </legend>
 
-                    <div class="form-group full-width image-upload-group">
-                        <label for="id_sub_images" class="upload-label">
-                            <div class="upload-content">
-                                <span class="upload-icon">
-                                    <svg viewBox="0 0 24 24" width="48" height="48">
-                                        <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                                    </svg>
-                                </span>
-
-                                <span class="upload-text">
-                                    {% trans "Click to upload images" %}
-                                </span>
-
-                                <span class="file-info">
-                                    {% trans "PNG, JPG up to 5MB" %}
-                                </span>
+                    <div class="item-create__field item-create__main-image-field{% if form.main_image.errors %} has-errors{% endif %}">
+                        {{ form.main_image.label_tag }}
+                        {% if form.instance.pk and form.instance.main_image %}
+                            <div class="item-create__current-image">
+                                <img src="{{ form.instance.main_image.url }}" alt="{% trans 'Current main product image' %}">
+                                <span>{% trans "Current main photo" %}</span>
                             </div>
+                        {% endif %}
+                        {{ form.main_image }}
+                        <div class="item-create__main-preview" id="mainImagePreview" aria-live="polite"></div>
+                        {% if form.main_image.help_text %}<small class="item-create__help">{{ form.main_image.help_text }}</small>{% endif %}
+                        {% if form.main_image.errors %}
+                            <ul class="item-create__errors" role="alert">
+                                {% for error in form.main_image.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
 
+                    <div class="item-create__field item-create__field--wide{% if form.sub_images.errors %} has-errors{% endif %}">
+                        <label for="id_sub_images">{% trans "Additional photos" %} <span class="item-create__optional">{% trans "Optional" %}</span></label>
+                        <label
+                            class="item-create__upload-zone"
+                            for="id_sub_images"
+                            id="imageDropZone"
+                            data-selected-one="{% trans 'image selected' %}"
+                            data-selected-many="{% trans 'images selected' %}"
+                            data-remove-label="{% trans 'Remove' %}"
+                        >
+                            <span class="item-create__upload-icon" aria-hidden="true">
+                                <svg viewBox="0 0 48 48" focusable="false">
+                                    <path d="M24 32V9m0 0-9 9m9-9 9 9M9 29v10h30V29" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+                                </svg>
+                            </span>
+                            <span class="item-create__upload-copy">
+                                <strong data-upload-label>{% trans "Choose images or drop them here" %}</strong>
+                                <small data-upload-help>{% trans "Add a few extra angles or details (JPG, PNG, or WebP)." %}</small>
+                            </span>
                             {{ form.sub_images }}
                         </label>
-
-                        <div class="preview-container" id="imagePreview"></div>
-
+                        <div class="item-create__preview-grid" id="imagePreview" aria-live="polite"></div>
+                        {% if form.sub_images.help_text %}<small class="item-create__help">{{ form.sub_images.help_text }}</small>{% endif %}
                         {% if form.sub_images.errors %}
-                            <ul class="errorlist">
-                                {% for error in form.sub_images.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
+                            <ul class="item-create__errors" role="alert">
+                                {% for error in form.sub_images.errors %}<li>{{ error }}</li>{% endfor %}
                             </ul>
                         {% endif %}
                     </div>
-                </div>
-            </div>
+                </fieldset>
 
-            <div class="form-actions">
-                <button type="submit" class="submit-btn">
-                    <span class="btn-text">{% trans "Save Item" %}</span>
-                    <span class="btn-icon">✓</span>
-                </button>
+                <div class="item-create__actions">
+                    <a class="item-create__cancel" href="{% url 'poultrys:item_list' %}">{% trans "Cancel" %}</a>
+                    <button class="item-create__submit" type="submit" data-saving-text="{% trans 'Saving item...' %}">
+                        <span>{% if form.instance.pk %}{% trans "Save changes" %}{% else %}{% trans "Publish item" %}{% endif %}</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="item-create__sidebar" aria-label="{% trans 'Listing tips' %}">
+            <section class="item-create__tip-card">
+                <span class="item-create__tip-icon" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" focusable="false">
+                        <path d="M16 3a10 10 0 0 0-6 18v4h12v-4a10 10 0 0 0-6-18Zm-4 25h8m-7-8-2-2m11 2 2-2m-8-9v5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                    </svg>
+                </span>
+                <h2>{% trans "A great listing starts here" %}</h2>
+                <p>{% trans "A little extra care makes it easier for the right buyers to choose your product." %}</p>
+                <ul>
+                    <li><span aria-hidden="true">✓</span>{% trans "Use a clear, specific item name." %}</li>
+                    <li><span aria-hidden="true">✓</span>{% trans "Set a fair price in Ethiopian birr." %}</li>
+                    <li><span aria-hidden="true">✓</span>{% trans "Add bright, in-focus photos." %}</li>
+                    <li><span aria-hidden="true">✓</span>{% trans "Describe condition and availability." %}</li>
+                </ul>
+            </section>
+            <div class="item-create__trust-note">
+                <span aria-hidden="true">✦</span>
+                <p><strong>{% trans "Made for local farms" %}</strong><br>{% trans "Connect your poultry products with customers in your community." %}</p>
             </div>
-        </form>
+        </aside>
     </div>
-</div>
+</main>
 {% endblock %}
 
 {% block js %}
