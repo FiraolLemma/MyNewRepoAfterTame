@@ -1,11 +1,3 @@
-/* =========================================================
-   ShegerCity Dairy Homepage
-   Scope: hero section and all homepage content below it.
-   Header and footer are intentionally not styled here.
-   Suggested location:
-   dairys/static/dairys/css/index.css
-   ========================================================= */
-
 .dairy-home {
     --dairy-green: #087b2c;
     --dairy-green-dark: #004d24;
