@@ -1,0 +1,58 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Register as a Dairy Consultant | Sheger City" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/consultacy.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="consultacy-page consultacy-page--form">
+    <a class="consultacy-back-link" href="{% url 'dairys:veterinary_consultancy' %}">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> {% trans "Back to consultants" %}
+    </a>
+
+    <div class="consultacy-form-layout">
+        <section class="consultacy-form-panel" aria-labelledby="consultacy-form-title">
+            <span class="consultacy-eyebrow consultacy-eyebrow--green"><i class="fas fa-seedling" aria-hidden="true"></i> {% trans "Grow your practice" %}</span>
+            <h1 id="consultacy-form-title">{% trans "Create your consulting profile" %}</h1>
+            <p class="consultacy-form-intro">{% trans "Tell dairy farmers what you specialize in, where you work, and how they can book your help." %}</p>
+
+            <form method="post" class="consultancy-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="consultancy-form__grid">
+                    {% for field in form %}
+                    <div class="consultancy-form__field{% if field.name == 'description' %} consultancy-form__field--wide{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span aria-hidden="true"> *</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<p class="consultancy-form__help">{{ field.help_text }}</p>{% endif %}
+                        {{ field.errors }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="consultancy-form__notice"><i class="fas fa-circle-info" aria-hidden="true"></i> {% trans "Your profile is linked to your account. Contact the site team if your availability needs to change." %}</p>
+                <div class="consultancy-form__actions">
+                    <a class="consultacy-button consultacy-button--message" href="{% url 'dairys:veterinary_consultancy' %}">{% trans "Cancel" %}</a>
+                    <button class="consultacy-button consultacy-button--book" type="submit">
+                        <i class="fas fa-check" aria-hidden="true"></i> {% trans "Publish profile" %}
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="consultacy-form-aside">
+            <span class="consultacy-form-aside__icon"><i class="fas fa-handshake-angle" aria-hidden="true"></i></span>
+            <h2>{% trans "Reach the right farmers" %}</h2>
+            <p>{% trans "A clear profile helps farmers understand your expertise and request a consultation that fits their needs." %}</p>
+            <ul>
+                <li><i class="fas fa-check" aria-hidden="true"></i> {% trans "Choose your area of expertise" %}</li>
+                <li><i class="fas fa-check" aria-hidden="true"></i> {% trans "Set your location and availability" %}</li>
+                <li><i class="fas fa-check" aria-hidden="true"></i> {% trans "Receive consultation requests online" %}</li>
+            </ul>
+        </aside>
+    </div>
+</main>
+{% endblock %}

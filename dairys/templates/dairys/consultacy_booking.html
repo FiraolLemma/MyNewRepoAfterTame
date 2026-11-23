@@ -1,0 +1,65 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Request a Dairy Consultation | Sheger City" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/consultacy.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="consultacy-page consultacy-page--form">
+    <a class="consultacy-back-link" href="{% url 'dairys:veterinary_consultancy' %}">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> {% trans "Back to consultants" %}
+    </a>
+
+    <div class="consultacy-form-layout consultacy-form-layout--booking">
+        <section class="consultacy-form-panel" aria-labelledby="consultacy-booking-title">
+            <span class="consultacy-eyebrow consultacy-eyebrow--green"><i class="fas fa-calendar-check" aria-hidden="true"></i> {% trans "Consultation request" %}</span>
+            <h1 id="consultacy-booking-title">{% trans "Book a consultation" %}</h1>
+            <p class="consultacy-form-intro">{% trans "Send your preferred date and a short note. The consultant will follow up to confirm." %}</p>
+
+            <form method="post" class="consultancy-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="consultancy-form__grid">
+                    {% for field in form %}
+                    <div class="consultancy-form__field{% if field.name == 'message' %} consultancy-form__field--wide{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span aria-hidden="true"> *</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<p class="consultancy-form__help">{{ field.help_text }}</p>{% endif %}
+                        {{ field.errors }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="consultancy-form__actions">
+                    <a class="consultacy-button consultacy-button--message" href="{% url 'dairys:veterinary_consultancy' %}">{% trans "Cancel" %}</a>
+                    <button class="consultacy-button consultacy-button--book" type="submit">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> {% trans "Send request" %}
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="consultacy-service-summary">
+            <div class="consultant-avatar consultant-avatar--large">
+                {% if service.provider.profile_picture %}
+                <img src="{{ service.provider.profile_picture.url }}" alt="">
+                {% else %}
+                <i class="fas fa-user-doctor" aria-hidden="true"></i>
+                {% endif %}
+            </div>
+            <span class="consultacy-eyebrow consultacy-eyebrow--green">{% trans "Your consultant" %}</span>
+            <h2>{{ service.name }}</h2>
+            <p class="consultacy-service-summary__specialty">{{ service.get_service_type_display }}</p>
+            <p><i class="fas fa-location-dot" aria-hidden="true"></i> {% if service.location %}{{ service.location }}{% else %}{% trans "Location shared after booking" %}{% endif %}</p>
+            <p><i class="fas fa-clock" aria-hidden="true"></i> {% if service.availability %}{{ service.availability }}{% else %}{% trans "Contact to arrange a time" %}{% endif %}</p>
+            <div class="consultacy-service-summary__fee">
+                <span>{% trans "Consultation fee" %}</span>
+                <strong>{{ service.display_price }}</strong>
+            </div>
+        </aside>
+    </div>
+</main>
+{% endblock %}

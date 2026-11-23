@@ -170,6 +170,12 @@ class DairyProduct(models.Model):
 
 
 class DairyService(models.Model):
+    CONSULTING_SERVICE_TYPE_VALUES = (
+        "farm_setup",
+        "herd_health",
+        "breeding_ai",
+        "milk_yield",
+    )
     SERVICE_KIND_CHOICES = [
         ("training", _("Dairy Farm Training")),
         ("consulting", _("Dairy Farm Consulting")),
@@ -214,6 +220,17 @@ class DairyService(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        if self.service_kind == "consulting":
+            return f"{reverse('dairys:veterinary_consultancy')}#consultant-{self.pk}"
+        return reverse("dairys:index")
+
+    @property
+    def display_price(self):
+        if self.price == 0:
+            return _("Free")
+        return f"{self.price:,.2f} ETB"
 
 
 class DairyConsultation(models.Model):

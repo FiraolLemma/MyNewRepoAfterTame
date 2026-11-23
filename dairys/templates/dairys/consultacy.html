@@ -1,5 +1,144 @@
 {% extends "base/base.html" %}
-{% block title %}Request Dairy Consultation{% endblock %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Dairy Veterinary Consulting | Sheger City" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/consultacy.css' %}">
+{% endblock %}
+
 {% block content %}
-  <h1>Request Dairy Consultation</h1>
+<main class="consultacy-page">
+    <header class="consultacy-hero">
+        <div class="consultacy-hero__copy">
+            <span class="consultacy-eyebrow"><i class="fas fa-leaf" aria-hidden="true"></i> {% trans "Support for dairy farms" %}</span>
+            <h1>{% trans "Dairy veterinary consulting & advice" %}</h1>
+            <p>{% trans "Connect with dairy health and farm management professionals." %}</p>
+        </div>
+        <a class="consultacy-button consultacy-button--light" href="{% url 'dairys:consultacy_create' %}">
+            <i class="fas fa-plus" aria-hidden="true"></i>
+            {% trans "Register as a veterinarian" %}
+        </a>
+        <span class="consultacy-hero__decoration" aria-hidden="true"><i class="fas fa-stethoscope"></i></span>
+    </header>
+
+    <section class="consultacy-content" aria-labelledby="consultacy-results-title">
+        <div class="consultacy-toolbar">
+            <div class="consultacy-results-heading">
+                <span class="consultacy-heading-icon"><i class="fas fa-user-doctor" aria-hidden="true"></i></span>
+                <div>
+                    <h2 id="consultacy-results-title">{% trans "Veterinary consultants & experts" %}</h2>
+                    <p><span data-result-count>{{ service_count }}</span> {% trans "consultants available" %}</p>
+                </div>
+            </div>
+
+            <form class="consultacy-filters" method="get" action="{% url 'dairys:veterinary_consultancy' %}">
+                <label class="consultacy-search">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <span class="visually-hidden">{% trans "Search consultants" %}</span>
+                    <input type="search" name="q" value="{{ search_query }}" placeholder="{% trans 'Name, expertise, or location' %}" data-consultant-search>
+                </label>
+                <label class="consultacy-select">
+                    <span class="visually-hidden">{% trans "Filter by expertise" %}</span>
+                    <select name="specialty">
+                        <option value="">{% trans "All specialties" %}</option>
+                        {% for value, label in service_types %}
+                        <option value="{{ value }}" {% if selected_service_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <button class="consultacy-button consultacy-button--filter" type="submit">{% trans "Filter" %}</button>
+            </form>
+        </div>
+
+        {% if services %}
+        <div class="consultant-list" data-consultant-list>
+            {% for service in services %}
+            <article
+                class="consultant-card"
+                id="consultant-{{ service.pk }}"
+                data-consultant-card
+                data-search="{{ service.name }} {{ service.get_service_type_display }} {{ service.location }} {{ service.service_area }} {{ service.provider.username }} {{ service.description }}"
+            >
+                <div class="consultant-card__main">
+                    <div class="consultant-card__identity">
+                        <div class="consultant-avatar">
+                            {% if service.provider.profile_picture %}
+                            <img src="{{ service.provider.profile_picture.url }}" alt="">
+                            {% else %}
+                            <i class="fas fa-user-doctor" aria-hidden="true"></i>
+                            {% endif %}
+                        </div>
+                        <div class="consultant-card__name">
+                            <h3>{{ service.name }}</h3>
+                            <p>{{ service.get_service_type_display }}</p>
+                        </div>
+                    </div>
+
+                    <div class="consultant-meta">
+                        <span class="consultant-meta__label">{% trans "Clinic / base" %}</span>
+                        <span class="consultant-meta__value">
+                            <i class="fas fa-location-dot" aria-hidden="true"></i>
+                            {% if service.location %}{{ service.location }}{% else %}{% trans "Location shared after booking" %}{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="consultant-meta consultant-meta--availability">
+                        <span class="consultant-meta__label">{% trans "Availability" %}</span>
+                        <span class="consultant-availability">
+                            <i class="fas fa-circle" aria-hidden="true"></i>
+                            {% if service.availability %}{{ service.availability }}{% else %}{% trans "Contact to arrange a time" %}{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="consultant-fee">
+                        <span class="consultant-meta__label">{% trans "Consultation fee" %}</span>
+                        <strong>{{ service.display_price }}</strong>
+                    </div>
+
+                    <div class="consultant-actions">
+                        {% if request.user.is_authenticated and request.user == service.provider %}
+                        <span class="consultant-own-listing"><i class="fas fa-circle-check" aria-hidden="true"></i> {% trans "Your listing" %}</span>
+                        {% else %}
+                        <a class="consultacy-button consultacy-button--book" href="{% url 'dairys:consultation_create' service_id=service.pk %}">
+                            <i class="fas fa-calendar-check" aria-hidden="true"></i> {% trans "Book" %}
+                        </a>
+                        {% endif %}
+                        {% if not request.user.is_authenticated or request.user != service.provider %}
+                        <a class="consultacy-button consultacy-button--message" href="{% url 'conversation:new' app_label='dairys' model_name='dairyservice' object_id=service.pk %}">
+                            <i class="fas fa-envelope" aria-hidden="true"></i> {% trans "Message" %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <details class="consultant-card__details">
+                    <summary>{% trans "About this consultant" %}<i class="fas fa-chevron-down" aria-hidden="true"></i></summary>
+                    <div class="consultant-card__description">
+                        <p>{{ service.description|linebreaksbr }}</p>
+                        {% if service.schedule %}<p><strong>{% trans "Consultation method:" %}</strong> {{ service.schedule }}</p>{% endif %}
+                        {% if service.service_area %}<p><strong>{% trans "Service area:" %}</strong> {{ service.service_area }}</p>{% endif %}
+                    </div>
+                </details>
+            </article>
+            {% endfor %}
+            <p class="consultacy-no-match" data-no-match hidden>{% trans "No consultants match your search." %}</p>
+        </div>
+        {% else %}
+        <div class="consultacy-empty">
+            <span><i class="fas fa-stethoscope" aria-hidden="true"></i></span>
+            <h3>{% trans "No consultants found" %}</h3>
+            <p>{% trans "Try another search or specialty, or be the first to add a consulting profile." %}</p>
+            <a class="consultacy-button consultacy-button--book" href="{% url 'dairys:consultacy_create' %}">
+                <i class="fas fa-plus" aria-hidden="true"></i> {% trans "Register as a veterinarian" %}
+            </a>
+        </div>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'dairys/js/consultacy.js' %}" defer></script>
 {% endblock %}

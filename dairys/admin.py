@@ -26,9 +26,28 @@ class DairyProductAdmin(admin.ModelAdmin):
 
 @admin.register(DairyService)
 class DairyServiceAdmin(admin.ModelAdmin):
-    list_display = ("name", "service_kind", "service_type", "training_format", "price", "is_available")
-    list_filter = ("service_kind", "service_type", "training_format", "is_available")
-    search_fields = ("name", "service_type", "location", "service_area")
+    list_display = (
+        "name",
+        "service_kind",
+        "service_type",
+        "provider",
+        "price",
+        "is_available",
+        "is_featured",
+        "created_at",
+    )
+    list_filter = ("service_kind", "service_type", "is_available", "is_featured")
+    search_fields = (
+        "name",
+        "description",
+        "provider__username",
+        "provider__phone_number",
+        "location",
+        "service_area",
+    )
+    readonly_fields = ("created_at",)
+    list_select_related = ("provider",)
+    list_per_page = 30
     prepopulated_fields = {"slug": ("name",)}
 
 
@@ -41,6 +60,23 @@ class TrainingEnrollmentAdmin(admin.ModelAdmin):
 
 @admin.register(DairyConsultation)
 class DairyConsultationAdmin(admin.ModelAdmin):
-    list_display = ("name", "service", "preferred_date", "status", "created_at")
-    list_filter = ("status", "preferred_date")
-    search_fields = ("name", "email", "phone")
+    list_display = (
+        "name",
+        "service",
+        "customer",
+        "preferred_date",
+        "status",
+        "created_at",
+    )
+    list_filter = ("status", "preferred_date", "service__service_type")
+    search_fields = (
+        "name",
+        "email",
+        "phone",
+        "service__name",
+        "service__provider__username",
+    )
+    readonly_fields = ("created_at",)
+    list_select_related = ("service", "service__provider", "customer")
+    list_per_page = 30
+    date_hierarchy = "created_at"
