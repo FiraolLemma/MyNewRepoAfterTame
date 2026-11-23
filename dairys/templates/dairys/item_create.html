@@ -1,5 +1,64 @@
 {% extends "base/base.html" %}
-{% block title %}Item create{% endblock %}
-{% block content %}
-  <h1>Item create</h1>
+{% load static %}
+
+{% block title %}List a Dairy Farm Item{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/item_create.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
+
+{% block content %}
+<main class="dairy-item-create">
+    <a class="dairy-item-create__back" href="{% url 'dairys:items' %}">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to Dairy Items
+    </a>
+    <section class="dairy-item-create__panel">
+        <header class="dairy-item-create__header">
+            <span class="dairy-item-create__icon" aria-hidden="true"><i class="fa-solid fa-box-open"></i></span>
+            <div>
+                <h1>List a Dairy Farm Item</h1>
+                <p>Share quality dairy equipment and supplies with local farms.</p>
+            </div>
+        </header>
+
+        {% if form %}
+        <form class="dairy-item-create__form" method="post" enctype="multipart/form-data" data-item-create-form>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="dairy-item-create__errors" role="alert">{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% for field in form %}
+            <div class="dairy-item-create__field{% if field.name == 'description' or field.name == 'main_image' or field.name == 'item_group' %} dairy-item-create__field--full{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<span class="dairy-item-create__error">{{ error }}</span>{% endfor %}
+            </div>
+            {% endfor %}
+            <div class="dairy-item-create__preview" data-item-image-preview hidden>
+                <img src="" alt="Selected item preview" data-item-preview-image>
+            </div>
+            <button type="submit" class="dairy-item-create__submit">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Publish Item
+            </button>
+        </form>
+        {% else %}
+        <p class="dairy-item-create__notice" role="status">
+            The item submission form is not available on this page yet. Return to the listings to browse available items.
+        </p>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'dairys/js/item_create.js' %}"></script>
+{% endblock %}
+
+
+
+
+
+
+

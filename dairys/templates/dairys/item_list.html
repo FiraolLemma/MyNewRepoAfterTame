@@ -1,5 +1,127 @@
 {% extends "base/base.html" %}
-{% block title %}List Items For Sell{% endblock %}
+{% load static %}
+
+{% block title %}Dairy Farm Items for Sale{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/item_list.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-<h1>List Items For Sell</h1>
+<main class="dairy-items" data-dairy-items>
+    <section class="dairy-items-hero" aria-labelledby="dairy-items-title">
+        <div class="dairy-items-hero__copy">
+            <h1 id="dairy-items-title">Dairy Farm Items for Sale</h1>
+            <p>Quality equipment and supplies for productive dairy farms</p>
+        </div>
+    </section>
+
+    <div class="dairy-items-layout">
+        <aside class="dairy-items-sidebar" aria-label="Dairy item categories">
+            <h2 class="dairy-items-sidebar__title">
+                <i class="fa-solid fa-list" aria-hidden="true"></i>
+                <span>Item Categories</span>
+            </h2>
+            <nav class="dairy-items-categories" aria-label="Filter by item category">
+                <button class="dairy-items-category is-active" type="button" data-filter="all" aria-pressed="true">
+                    <span class="dairy-items-category__icon" aria-hidden="true"><i class="fa-solid fa-border-all"></i></span>
+                    <span class="dairy-items-category__name">All Items</span>
+                    <span class="dairy-items-category__count">{{ total_count }}</span>
+                </button>
+                {% for category in categories %}
+                <button class="dairy-items-category" type="button" data-filter="{{ category.value }}" aria-pressed="false">
+                    <span class="dairy-items-category__icon" aria-hidden="true">
+                        {% if category.value == "milking" %}<i class="fa-solid fa-droplet"></i>
+                        {% elif category.value == "cooling" %}<i class="fa-solid fa-snowflake"></i>
+                        {% elif category.value == "processing" %}<i class="fa-solid fa-gears"></i>
+                        {% elif category.value == "feeding" %}<i class="fa-solid fa-wheat-awn"></i>
+                        {% else %}<i class="fa-solid fa-warehouse"></i>{% endif %}
+                    </span>
+                    <span class="dairy-items-category__name">{{ category.label }}</span>
+                    <span class="dairy-items-category__count">{{ category.count }}</span>
+                </button>
+                {% endfor %}
+            </nav>
+        </aside>
+
+        <section class="dairy-items-results" aria-labelledby="dairy-items-results-title">
+            <header class="dairy-items-results__header">
+                <div class="dairy-items-results__heading">
+                    <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
+                    <h2 id="dairy-items-results-title">Dairy Farm Items</h2>
+                    <span class="dairy-items-results__total">(Total: <span data-item-count>{{ total_count }}</span>)</span>
+                </div>
+                <div class="dairy-items-results__tools">
+                    <label class="dairy-items-search">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <span class="visually-hidden">Search dairy items</span>
+                        <input type="search" data-item-search placeholder="Search dairy items..." autocomplete="off">
+                    </label>
+                    <label class="dairy-items-sort">
+                        <span class="visually-hidden">Sort dairy items</span>
+                        <select data-item-sort>
+                            <option value="newest">Sort by: Newest First</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="name">Name: A to Z</option>
+                        </select>
+                    </label>
+                </div>
+            </header>
+
+            <div class="dairy-items-grid" data-item-grid>
+                {% for item in items %}
+                <article class="dairy-item-card"
+                         data-item-card
+                         data-category="{{ item.item_group|default:'' }}"
+                         data-price="{{ item.price }}"
+                         data-name="{{ item.name|lower }}"
+                         data-search="{{ item.name }} {{ item.subcategory }} {{ item.get_item_group_display }} {{ item.location }}"
+                         data-created="{{ item.created_at|date:'U' }}">
+                    <a class="dairy-item-card__image-link" href="{% url 'dairys:item_detail' item.pk %}" aria-label="View {{ item.name }}">
+                        {% if item.main_image %}
+                        <img class="dairy-item-card__image" src="{{ item.main_image.url }}" alt="{{ item.name }}" loading="lazy" data-item-image data-fallback="https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&amp;fit=crop&amp;w=800&amp;q=85">
+                        {% else %}
+                        <img class="dairy-item-card__image" src="https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&amp;fit=crop&amp;w=800&amp;q=85" alt="{{ item.name }}" loading="lazy" data-item-image>
+                        {% endif %}
+                    </a>
+                    <div class="dairy-item-card__body">
+                        <h3 class="dairy-item-card__name">{{ item.name }}</h3>
+                        <p class="dairy-item-card__price">ETB {{ item.price|floatformat:"2" }}</p>
+                        <p class="dairy-item-card__seller">
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            {{ item.seller_name }}
+                        </p>
+                        <p class="dairy-item-card__details">
+                            <i class="fa-solid fa-box" aria-hidden="true"></i>
+                            {% if item.get_item_group_display %}{{ item.get_item_group_display }}{% else %}Dairy Farm Item{% endif %}
+                            {% if item.location %}<span aria-hidden="true"> &middot; </span>{{ item.location }}{% endif %}
+                        </p>
+                        <div class="dairy-item-card__actions">
+                            <a class="dairy-item-button dairy-item-button--cart" href="{% url 'cart:add_to_cart' 'dairys' 'dairyproduct' item.pk %}">
+                                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Add to Cart
+                            </a>
+                            <a class="dairy-item-button dairy-item-button--view" href="{% url 'dairys:item_detail' item.pk %}">
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i> View
+                            </a>
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="dairy-items-empty" data-items-empty>
+                    <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+                    <h3>No dairy items available yet</h3>
+                    <p>Check back soon for supplies and equipment from local dairy farms.</p>
+                </div>
+                {% endfor %}
+            </div>
+            <p class="dairy-items-no-match" data-item-no-match hidden>No dairy items match your search.</p>
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'dairys/js/item_list.js' %}"></script>
 {% endblock %}

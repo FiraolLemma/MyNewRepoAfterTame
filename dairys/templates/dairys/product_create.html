@@ -1,5 +1,51 @@
 {% extends "base/base.html" %}
-{% block title %}Product Create{% endblock %}
+{% load static %}
+
+{% block title %}List a Dairy Product{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/product_create.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-<h1>Product Create</h1>
+<main class="dairy-product-create">
+    <a class="dairy-product-create__back" href="{% url 'dairys:products' %}">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to Dairy Products
+    </a>
+    <section class="dairy-product-create__panel">
+        <header class="dairy-product-create__header">
+            <span class="dairy-product-create__icon" aria-hidden="true"><i class="fa-solid fa-bottle-water"></i></span>
+            <div>
+                <h1>List a Dairy Product</h1>
+                <p>Share fresh dairy products with buyers in your community.</p>
+            </div>
+        </header>
+
+        <form class="dairy-product-create__form" method="post" enctype="multipart/form-data" data-product-create-form>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="dairy-product-create__errors" role="alert">{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% for field in form %}
+            <div class="dairy-product-create__field{% if field.name == 'description' or field.name == 'main_image' %} dairy-product-create__field--full{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<span class="dairy-product-create__error">{{ error }}</span>{% endfor %}
+            </div>
+            {% endfor %}
+            <div class="dairy-product-create__preview" data-product-image-preview hidden>
+                <img src="" alt="Selected product preview" data-product-preview-image>
+            </div>
+            <button type="submit" class="dairy-product-create__submit">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Publish Product
+            </button>
+        </form>
+    </section>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'dairys/js/product_create.js' %}"></script>
 {% endblock %}

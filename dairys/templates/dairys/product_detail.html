@@ -1,5 +1,90 @@
 {% extends "base/base.html" %}
-{% block title %}Product Detail{% endblock %}
+{% load static %}
+
+{% block title %}{{ product.name }} | Dairy Products{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/product_detail.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-<h1>Product Detail</h1>
+<main class="dairy-product-detail">
+    <nav class="dairy-product-detail__breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'dairys:products' %}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to Dairy Products</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ product.subcategory|default:"Fresh Dairy" }}</span>
+    </nav>
+
+    <article class="dairy-product-detail__card">
+        <div class="dairy-product-detail__photo">
+            {% if product.main_image %}
+            <img src="{{ product.main_image.url }}"
+                 alt="{{ product.name }}"
+                 data-product-detail-image
+                 data-fallback="https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&amp;fit=crop&amp;w=1000&amp;q=85">
+            {% else %}
+            <img src="https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&amp;fit=crop&amp;w=1000&amp;q=85"
+                 alt="{{ product.name }}"
+                 data-product-detail-image>
+            {% endif %}
+        </div>
+
+        <div class="dairy-product-detail__content">
+            <span class="dairy-product-detail__category">
+                {% if product.subcategory %}{{ product.subcategory }}{% elif product.get_milk_source_display %}{{ product.get_milk_source_display }} milk{% else %}Dairy Product{% endif %}
+            </span>
+            <h1>{{ product.name }}</h1>
+            <p class="dairy-product-detail__price">
+                ETB {{ product.price|floatformat:"2" }}{% if product.unit %} <span>/ {{ product.unit }}</span>{% endif %}
+            </p>
+
+            <div class="dairy-product-detail__seller">
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+                <span>{{ product.seller_name }}</span>
+            </div>
+
+            <p class="dairy-product-detail__description">{{ product.description|linebreaksbr }}</p>
+
+            <dl class="dairy-product-detail__facts">
+                {% if product.get_milk_source_display %}
+                <div><dt>Milk source</dt><dd>{{ product.get_milk_source_display }}</dd></div>
+                {% endif %}
+                {% if product.milk_unit %}
+                <div><dt>Package unit</dt><dd>{{ product.get_milk_unit_display }}</dd></div>
+                {% endif %}
+                <div>
+                    <dt>Availability</dt>
+                    <dd>
+                        {% if product.quantity_available %}
+                            {{ product.quantity_available }}{% if product.unit %} {{ product.unit }}{% else %} available{% endif %}
+                        {% else %}
+                            Out of stock
+                        {% endif %}
+                    </dd>
+                </div>
+                {% if product.collection_date %}
+                <div><dt>Collection date</dt><dd>{{ product.collection_date|date:"M j, Y" }}</dd></div>
+                {% endif %}
+                {% if product.location %}
+                <div><dt>Location</dt><dd>{{ product.location }}</dd></div>
+                {% endif %}
+            </dl>
+
+            <div class="dairy-product-detail__actions">
+                <a class="dairy-product-detail__cart" href="{% url 'cart:add_to_cart' 'dairys' 'dairyproduct' product.pk %}">
+                    <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Add to Cart
+                </a>
+                <button class="dairy-product-detail__share" type="button" data-product-share>
+                    <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Share
+                </button>
+            </div>
+            <p class="dairy-product-detail__status" data-share-status aria-live="polite"></p>
+        </div>
+    </article>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'dairys/js/product_detail.js' %}"></script>
 {% endblock %}

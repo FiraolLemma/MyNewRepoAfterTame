@@ -1,5 +1,80 @@
 {% extends "base/base.html" %}
-{% block title %}Dairy Item Detail{% endblock %}
+{% load static %}
+
+{% block title %}{{ item.name }} | Dairy Farm Items{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/item_detail.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-  <h1>Dairy Item Detail</h1>
+<main class="dairy-item-detail">
+    <nav class="dairy-item-detail__breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'dairys:items' %}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to Dairy Items</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ item.get_item_group_display|default:"Dairy Farm Item" }}</span>
+    </nav>
+
+    <article class="dairy-item-detail__card">
+        <div class="dairy-item-detail__photo">
+            {% if item.main_image %}
+            <img src="{{ item.main_image.url }}"
+                 alt="{{ item.name }}"
+                 data-item-detail-image
+                 data-fallback="https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&amp;fit=crop&amp;w=1000&amp;q=85">
+            {% else %}
+            <img src="https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&amp;fit=crop&amp;w=1000&amp;q=85"
+                 alt="{{ item.name }}"
+                 data-item-detail-image>
+            {% endif %}
+        </div>
+
+        <div class="dairy-item-detail__content">
+            <span class="dairy-item-detail__category">{{ item.get_item_group_display|default:"Dairy Farm Item" }}</span>
+            <h1>{{ item.name }}</h1>
+            <p class="dairy-item-detail__price">ETB {{ item.price|floatformat:"2" }}</p>
+
+            <div class="dairy-item-detail__seller">
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+                <span>{{ item.seller_name }}</span>
+            </div>
+
+            <p class="dairy-item-detail__description">{{ item.description|linebreaksbr }}</p>
+
+            <dl class="dairy-item-detail__facts">
+                {% if item.subcategory %}
+                <div><dt>Type</dt><dd>{{ item.subcategory }}</dd></div>
+                {% endif %}
+                <div>
+                    <dt>Availability</dt>
+                    <dd>
+                        {% if item.quantity_available %}
+                            {{ item.quantity_available }}{% if item.unit %} {{ item.unit }}{% else %} available{% endif %}
+                        {% else %}
+                            Out of stock
+                        {% endif %}
+                    </dd>
+                </div>
+                {% if item.location %}
+                <div><dt>Location</dt><dd>{{ item.location }}</dd></div>
+                {% endif %}
+            </dl>
+
+            <div class="dairy-item-detail__actions">
+                <a class="dairy-item-detail__cart" href="{% url 'cart:add_to_cart' 'dairys' 'dairyproduct' item.pk %}">
+                    <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Add to Cart
+                </a>
+                <button class="dairy-item-detail__share" type="button" data-item-share>
+                    <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Share
+                </button>
+            </div>
+            <p class="dairy-item-detail__status" data-share-status aria-live="polite"></p>
+        </div>
+    </article>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'dairys/js/item_detail.js' %}"></script>
 {% endblock %}

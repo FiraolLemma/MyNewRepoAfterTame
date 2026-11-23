@@ -1,0 +1,127 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Dairy Cattle &amp; Livestock for Sale{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/cattlelivestock_list.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<main class="dairy-livestock" data-livestock-listing>
+    <section class="livestock-hero" aria-labelledby="livestock-hero-title">
+        <div class="livestock-hero__copy">
+            <h1 id="livestock-hero-title">Dairy Farm Cattle &amp; Livestock for Sale</h1>
+            <p>Healthy and high-breed dairy cattle for your farm</p>
+        </div>
+    </section>
+
+    <div class="livestock-layout">
+        <aside class="livestock-sidebar" aria-label="Livestock categories">
+            <h2 class="livestock-sidebar__title">
+                <i class="fa-solid fa-cow" aria-hidden="true"></i>
+                <span>Livestock Categories</span>
+            </h2>
+            <nav class="livestock-categories" aria-label="Filter by animal type">
+                <button class="livestock-category is-active" type="button" data-filter="all" aria-pressed="true">
+                    <span class="livestock-category__icon" aria-hidden="true"><i class="fa-solid fa-border-all"></i></span>
+                    <span class="livestock-category__name">All livestock</span>
+                    <span class="livestock-category__count">{{ total_count }}</span>
+                </button>
+                {% for category in categories %}
+                <button class="livestock-category" type="button" data-filter="{{ category.value }}" aria-pressed="false">
+                    <span class="livestock-category__icon" aria-hidden="true">
+                        {% if category.value == "dairy_cow" %}<i class="fa-solid fa-cow"></i>
+                        {% elif category.value == "heifer" %}<i class="fa-solid fa-cow"></i>
+                        {% elif category.value == "calf" %}<i class="fa-solid fa-cow"></i>
+                        {% elif category.value == "bull" %}<i class="fa-solid fa-cow"></i>
+                        {% elif category.value == "goat" %}<i class="fa-solid fa-horse"></i>
+                        {% else %}<i class="fa-solid fa-horse"></i>{% endif %}
+                    </span>
+                    <span class="livestock-category__name">{{ category.label }}</span>
+                    <span class="livestock-category__count">{{ category.count }}</span>
+                </button>
+                {% endfor %}
+            </nav>
+        </aside>
+
+        <section class="livestock-results" aria-labelledby="livestock-results-title">
+            <header class="livestock-results__header">
+                <div class="livestock-results__heading">
+                    <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
+                    <h2 id="livestock-results-title">Dairy Cattle &amp; Livestock</h2>
+                    <span class="livestock-results__total">(Total: <span data-result-count>{{ total_count }}</span>)</span>
+                </div>
+                <div class="livestock-results__tools">
+                    <label class="livestock-search">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <span class="visually-hidden">Search livestock</span>
+                        <input type="search" data-livestock-search placeholder="Search livestock..." autocomplete="off">
+                    </label>
+                    <label class="livestock-sort">
+                        <span class="visually-hidden">Sort livestock</span>
+                        <select data-livestock-sort>
+                            <option value="newest">Sort by: Newest First</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="name">Name: A to Z</option>
+                        </select>
+                    </label>
+                </div>
+            </header>
+
+            <div class="livestock-grid" data-livestock-grid>
+                {% for product in products %}
+                <article class="livestock-card"
+                         data-livestock-card
+                         data-category="{{ product.livestock_type|default:'' }}"
+                         data-price="{{ product.price }}"
+                         data-name="{{ product.name|lower }}"
+                         data-created="{{ product.created_at|date:'U' }}">
+                    <a class="livestock-card__image-link" href="{% url 'dairys:cattle_livestock_detail' product.pk %}" aria-label="View {{ product.name }}">
+                        {% if product.main_image %}
+                        <img class="livestock-card__image" src="{{ product.main_image.url }}" alt="{{ product.name }}" loading="lazy">
+                        {% else %}
+                        <img class="livestock-card__image" src="https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&amp;fit=crop&amp;w=800&amp;q=85" alt="{{ product.name }}" loading="lazy">
+                        {% endif %}
+                    </a>
+                    <div class="livestock-card__body">
+                        <h3 class="livestock-card__name">{{ product.name }}</h3>
+                        <p class="livestock-card__price">ETB {{ product.price|floatformat:"2" }}</p>
+                        <p class="livestock-card__seller">
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            {% if product.farm %}{{ product.farm.name }}{% elif product.company %}{{ product.company.name }}{% else %}{{ product.created_by.get_full_name|default:product.created_by.username }}{% endif %}
+                        </p>
+                        <p class="livestock-card__details">
+                            <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                            {% if product.breed %}{{ product.breed }}{% else %}{{ product.get_livestock_type_display }}{% endif %}
+                            {% if product.location %}<span aria-hidden="true"> &middot; </span>{{ product.location }}{% endif %}
+                        </p>
+                        <div class="livestock-card__actions">
+                            <a class="livestock-button livestock-button--cart" href="{% url 'cart:add_to_cart' 'dairys' 'dairyproduct' product.pk %}">
+                                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Add to Cart
+                            </a>
+                            <a class="livestock-button livestock-button--view" href="{% url 'dairys:cattle_livestock_detail' product.pk %}">
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i> View
+                            </a>
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="livestock-empty" data-livestock-empty>
+                    <i class="fa-solid fa-cow" aria-hidden="true"></i>
+                    <h3>No livestock listings yet</h3>
+                    <p>Check back soon for cattle and livestock from local dairy farms.</p>
+                </div>
+                {% endfor %}
+            </div>
+            <p class="livestock-no-match" data-no-match hidden>No livestock matches your search.</p>
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'dairys/js/cattlelivestock_list.js' %}"></script>
+{% endblock %}

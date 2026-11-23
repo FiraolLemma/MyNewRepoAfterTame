@@ -1,5 +1,129 @@
 {% extends "base/base.html" %}
-{% block title %}Product List{% endblock %}
+{% load static %}
+
+{% block title %}Fresh Dairy Products for Sale{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/product_list.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-<h1>Product List</h1>
+<main class="dairy-products" data-dairy-products>
+    <section class="dairy-products-hero" aria-labelledby="dairy-products-title">
+        <div class="dairy-products-hero__copy">
+            <h1 id="dairy-products-title">Fresh Dairy Products for Sale</h1>
+            <p>Farm-fresh milk and dairy foods from trusted local producers</p>
+        </div>
+    </section>
+
+    <div class="dairy-products-layout">
+        <aside class="dairy-products-sidebar" aria-label="Dairy product categories">
+            <h2 class="dairy-products-sidebar__title">
+                <i class="fa-solid fa-basket-shopping" aria-hidden="true"></i>
+                <span>Product Categories</span>
+            </h2>
+            <nav class="dairy-products-categories" aria-label="Filter by milk source">
+                <button class="dairy-products-category is-active" type="button" data-filter="all" aria-pressed="true">
+                    <span class="dairy-products-category__icon" aria-hidden="true"><i class="fa-solid fa-border-all"></i></span>
+                    <span class="dairy-products-category__name">All Products</span>
+                    <span class="dairy-products-category__count">{{ total_count }}</span>
+                </button>
+                {% for category in categories %}
+                <button class="dairy-products-category" type="button" data-filter="{{ category.value }}" aria-pressed="false">
+                    <span class="dairy-products-category__icon" aria-hidden="true">
+                        {% if category.value == "goat" %}<i class="fa-solid fa-horse-head"></i>
+                        {% elif category.value == "camel" %}<i class="fa-solid fa-cow"></i>
+                        {% else %}<i class="fa-solid fa-cow"></i>{% endif %}
+                    </span>
+                    <span class="dairy-products-category__name">{{ category.label }}</span>
+                    <span class="dairy-products-category__count">{{ category.count }}</span>
+                </button>
+                {% endfor %}
+            </nav>
+            <a class="dairy-products-sidebar__sell" href="{% url 'dairys:product_create' %}">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> List a Product
+            </a>
+        </aside>
+
+        <section class="dairy-products-results" aria-labelledby="dairy-products-results-title">
+            <header class="dairy-products-results__header">
+                <div class="dairy-products-results__heading">
+                    <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
+                    <h2 id="dairy-products-results-title">Fresh Milk &amp; Dairy Products</h2>
+                    <span class="dairy-products-results__total">(Total: <span data-product-count>{{ total_count }}</span>)</span>
+                </div>
+                <div class="dairy-products-results__tools">
+                    <label class="dairy-products-search">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <span class="visually-hidden">Search dairy products</span>
+                        <input type="search" data-product-search placeholder="Search dairy products..." autocomplete="off">
+                    </label>
+                    <label class="dairy-products-sort">
+                        <span class="visually-hidden">Sort dairy products</span>
+                        <select data-product-sort>
+                            <option value="newest">Sort by: Newest First</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="name">Name: A to Z</option>
+                        </select>
+                    </label>
+                </div>
+            </header>
+
+            <div class="dairy-products-grid" data-product-grid>
+                {% for product in products %}
+                <article class="dairy-product-card"
+                         data-product-card
+                         data-category="{{ product.milk_source|default:'' }}"
+                         data-price="{{ product.price }}"
+                         data-name="{{ product.name|lower }}"
+                         data-search="{{ product.name }} {{ product.subcategory }} {{ product.get_milk_source_display }} {{ product.location }}"
+                         data-created="{{ product.created_at|date:'U' }}">
+                    <a class="dairy-product-card__image-link" href="{{ product.get_absolute_url }}" aria-label="View {{ product.name }}">
+                        {% if product.main_image %}
+                        <img class="dairy-product-card__image" src="{{ product.main_image.url }}" alt="{{ product.name }}" loading="lazy" data-product-image data-fallback="https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&amp;fit=crop&amp;w=800&amp;q=85">
+                        {% else %}
+                        <img class="dairy-product-card__image" src="https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&amp;fit=crop&amp;w=800&amp;q=85" alt="{{ product.name }}" loading="lazy" data-product-image>
+                        {% endif %}
+                    </a>
+                    <div class="dairy-product-card__body">
+                        <h3 class="dairy-product-card__name">{{ product.name }}</h3>
+                        <p class="dairy-product-card__price">ETB {{ product.price|floatformat:"2" }}{% if product.unit %} <span>/ {{ product.unit }}</span>{% endif %}</p>
+                        <p class="dairy-product-card__seller">
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            {{ product.seller_name }}
+                        </p>
+                        <p class="dairy-product-card__details">
+                            <i class="fa-solid fa-droplet" aria-hidden="true"></i>
+                            {% if product.subcategory %}{{ product.subcategory }}{% elif product.get_milk_source_display %}{{ product.get_milk_source_display }} milk{% else %}Dairy Product{% endif %}
+                            {% if product.location %}<span aria-hidden="true"> &middot; </span>{{ product.location }}{% endif %}
+                        </p>
+                        <div class="dairy-product-card__actions">
+                            <a class="dairy-product-button dairy-product-button--cart" href="{% url 'cart:add_to_cart' 'dairys' 'dairyproduct' product.pk %}">
+                                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Add to Cart
+                            </a>
+                            <a class="dairy-product-button dairy-product-button--view" href="{{ product.get_absolute_url }}">
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i> View
+                            </a>
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="dairy-products-empty">
+                    <i class="fa-solid fa-bottle-water" aria-hidden="true"></i>
+                    <h3>No dairy products available yet</h3>
+                    <p>Check back soon for fresh milk and dairy foods from local farms.</p>
+                    <a href="{% url 'dairys:product_create' %}">List the first product</a>
+                </div>
+                {% endfor %}
+            </div>
+            <p class="dairy-products-no-match" data-product-no-match hidden>No dairy products match your search.</p>
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'dairys/js/product_list.js' %}"></script>
 {% endblock %}
