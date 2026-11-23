@@ -1,241 +1,239 @@
-# project/Dairys/views.py
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.text import slugify
-from django.views.decorators.http import require_POST
-from django.views.generic import ListView
-from .forms import DairyProductForm, DairyServiceForm
-from .models import DairyCategory, DairyProduct, DairyService
+from django.views.generic import CreateView, DetailView, ListView
+
 from users.roles import UserRole, role_required
+from django.utils.decorators import method_decorator
+
+from .forms import (
+    DairyConsultationForm,
+    DairyProductForm,
+    DairyServiceForm,
+    TrainingEnrollmentForm,
+)
+from .models import (
+    DairyCategory,
+    DairyConsultation,
+    DairyProduct,
+    DairyService,
+    ensure_product_categories,
+)
+from .forms import PRODUCT_MAIN_CATEGORIES, SERVICE_TYPES_BY_KIND
 
 
-def dairy_home(request):
-    featured_products = (
-        DairyProduct.objects.select_related("category", "created_by")
-        .filter(is_featured=True, quantity_available__gt=0)
-        .order_by("-is_featured", "-created_at")[:3]
-    )
-    featured_services = (
-        DairyService.objects.select_related("provider")
-        .filter(is_available=True)
-        .order_by("-created_at")[:3]
-    )
-    return render(
-        request,
-        "dairys/index.html",
-        {
-            "featured_products": featured_products,
-            "featured_services": featured_services,
-        },
-    )
+def index(request):
+    ensure_product_categories()
+    return render(request, "dairys/index.html", {
+        "featured_products": DairyProduct.objects.filter(is_featured=True)[:6],
+        "featured_services": DairyService.objects.filter(is_featured=True, is_available=True)[:4],
+    })
 
 
-class DairyMarketView(ListView):
+class MarketplaceView(ListView):
     model = DairyProduct
-    template_name = "dairys/dairy_market.html"
-    context_object_name = "dairy_products"
-    paginate_by = 24
+    template_name = "dairys/item_list.html"
+    context_object_name = "items"
+    paginate_by = 12
 
     def get_queryset(self):
-        products = DairyProduct.objects.select_related(
-            "category", "created_by"
-        ).filter(quantity_available__gt=0)
-        query = self.request.GET.get("q", "").strip()
-        category = self.request.GET.get("category", "").strip()
-        if query:
-            products = products.filter(
-                Q(name__icontains=query)
-                | Q(description__icontains=query)
-                | Q(location__icontains=query)
-                | Q(category__name__icontains=query)
-            )
+        ensure_product_categories()
+        queryset = DairyProduct.objects.select_related("category").all()
+        main_category = self.request.GET.get("main_category") or self.kwargs.get("default_main_category", "")
+        category = self.request.GET.get("category")
+        subcategory = self.request.GET.get("subcategory")
+        item_group = self.request.GET.get("item_group")
+        search = self.request.GET.get("q")
+        if main_category in PRODUCT_MAIN_CATEGORIES:
+            queryset = queryset.filter(main_category=main_category)
         if category:
-            products = products.filter(category__slug=category)
-        return products
+            queryset = queryset.filter(category__slug=category)
+        if subcategory:
+            queryset = queryset.filter(subcategory__iexact=subcategory)
+        if item_group:
+            queryset = queryset.filter(item_group=item_group)
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search)
+                | Q(description__icontains=search)
+                | Q(subcategory__icontains=search)
+                | Q(breed__icontains=search)
+            )
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        query = self.request.GET.get("q", "").strip()
-        services = DairyService.objects.select_related("provider").filter(
-            is_available=True
-        )
-        if query:
-            services = services.filter(
-                Q(name__icontains=query)
-                | Q(description__icontains=query)
-                | Q(location__icontains=query)
-                | Q(service_type__icontains=query)
-            )
-        context.update(
-            {
-                "dairy_services": services,
-                "categories": DairyCategory.objects.all(),
-                "query": query,
-                "selected_category": self.request.GET.get("category", ""),
-            }
+        main_category = self.request.GET.get("main_category") or self.kwargs.get("default_main_category", "")
+        categories = DairyCategory.objects.filter(main_category__in=PRODUCT_MAIN_CATEGORIES)
+        if main_category in PRODUCT_MAIN_CATEGORIES:
+            categories = categories.filter(main_category=main_category)
+        context["categories"] = categories.order_by("name")
+        context["main_categories"] = DairyCategory.MainCategory.choices[:3]
+        context["item_groups"] = DairyProduct.ItemGroup.choices
+        context["main_category"] = main_category
+        context["category"] = self.request.GET.get("category", "")
+        context["subcategory"] = self.request.GET.get("subcategory", "")
+        context["item_group"] = self.request.GET.get("item_group", "")
+        context["query"] = self.request.GET.get("q", "")
+        return context
+
+
+class ProductDetailView(DetailView):
+    model = DairyProduct
+    template_name = "dairys/item_detail.html"
+    context_object_name = "item"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["app_label"] = self.object._meta.app_label
+        context["model_name"] = self.object._meta.model_name
+        context["related_items"] = DairyProduct.objects.filter(category=self.object.category).exclude(pk=self.object.pk)[:4]
+        return context
+
+
+class ProductCreateView(LoginRequiredMixin, CreateView):
+    model = DairyProduct
+    form_class = DairyProductForm
+    template_name = "dairys/item_create.html"
+    login_url = "login"
+
+    @method_decorator(role_required(UserRole.FARMER, UserRole.SUPPLIER))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        response = super().form_valid(form)
+        messages.success(self.request, "Dairy listing published successfully.")
+        return response
+
+
+class ServiceCreateView(LoginRequiredMixin, CreateView):
+    model = DairyService
+    form_class = DairyServiceForm
+    template_name = "dairys/service_create.html"
+    login_url = "login"
+
+    @method_decorator(role_required(UserRole.SUPPLIER, UserRole.VETERINARIAN, UserRole.SERVICE_PROVIDER))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.provider = self.request.user
+        response = super().form_valid(form)
+        messages.success(self.request, "Dairy service published successfully.")
+        return response
+
+
+@login_required
+def product_edit(request, slug):
+    if request.user.is_staff:
+        item = get_object_or_404(DairyProduct, slug=slug)
+    else:
+        item = get_object_or_404(DairyProduct, slug=slug, created_by=request.user)
+    if request.method == "POST":
+        form = DairyProductForm(request.POST, request.FILES, instance=item, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Dairy listing updated.")
+            return redirect("dairys:product_detail", slug=item.slug)
+    else:
+        form = DairyProductForm(instance=item, user=request.user)
+    return render(request, "dairys/item_create.html", {"form": form})
+
+
+@login_required
+def product_delete(request, slug):
+    if request.user.is_staff:
+        item = get_object_or_404(DairyProduct, slug=slug)
+    else:
+        item = get_object_or_404(DairyProduct, slug=slug, created_by=request.user)
+    if request.method == "POST":
+        item.delete()
+        messages.success(request, "Dairy listing deleted.")
+        return redirect("dairys:marketplace")
+    return render(request, "dairys/product_confirm_delete.html", {"item": item})
+
+
+class ServiceListView(ListView):
+    model = DairyService
+    template_name = "dairys/services.html"
+    context_object_name = "services"
+
+    def get_queryset(self):
+        queryset = DairyService.objects.filter(is_available=True)
+        kind = self.request.GET.get("kind") or self.kwargs.get("default_kind", "")
+        service_type = self.request.GET.get("service_type")
+        if kind:
+            queryset = queryset.filter(service_kind=kind)
+        if service_type:
+            queryset = queryset.filter(service_type=service_type)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        kind = self.request.GET.get("kind") or self.kwargs.get("default_kind", "")
+        context["kind"] = kind
+        context["service_type"] = self.request.GET.get("service_type", "")
+        context["service_kinds"] = DairyService.ServiceKind.choices
+        type_values = SERVICE_TYPES_BY_KIND.get(kind)
+        context["service_types"] = (
+            [(value, DairyService.ServiceType(value).label) for value in type_values]
+            if type_values
+            else DairyService.ServiceType.choices
         )
         return context
 
 
-def _unique_slug(model, name, current=None):
-    base_slug = slugify(name) or "farm-listing"
-    slug = base_slug
-    suffix = 2
-    queryset = model.objects.all()
-    if current is not None:
-        queryset = queryset.exclude(pk=current.pk)
-    while queryset.filter(slug=slug).exists():
-        slug = f"{base_slug}-{suffix}"
-        suffix += 1
-    return slug
+class ServiceDetailView(DetailView):
+    model = DairyService
+    template_name = "dairys/service_detail.html"
+    context_object_name = "service"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["consultation_form"] = DairyConsultationForm()
+        return context
 
 
-def _owned_queryset(model, user):
-    queryset = model.objects.all()
-    return queryset if (
-        (user.is_staff or user.is_superuser) and not user.is_virtual_user
-    ) else queryset.filter(
-        **{"created_by" if model is DairyProduct else "provider": user}
-    )
-
-
-def dairy_product_detail(request, slug):
-    product = get_object_or_404(
-        DairyProduct.objects.select_related("category", "created_by"),
-        slug=slug,
-    )
-    return render(request, "dairys/dairyproduct_detail.html", {"product": product})
-
-
-def dairy_service_detail(request, slug):
-    service = get_object_or_404(
-        DairyService.objects.select_related("provider"),
-        slug=slug,
-    )
-    return render(request, "dairys/dairyservice_detail.html", {"service": service})
-
-
-@role_required(UserRole.FARMER, UserRole.SUPPLIER)
-def dairy_product_create(request):
-    form = DairyProductForm(
-        request.POST or None,
-        request.FILES or None,
-        user=request.user,
-    )
-    if request.method == "POST" and form.is_valid():
-        product = form.save(commit=False)
-        product.created_by = request.user
-        product.slug = _unique_slug(DairyProduct, product.name)
-        product.save()
-        messages.success(request, "Your dairy product has been listed.")
-        return redirect(product.get_absolute_url())
-    return render(
-        request,
-        "dairys/dairyproduct_form.html",
-        {"form": form, "form_title": "List a dairy product"},
-    )
-
-
-@login_required
-def dairy_product_update(request, slug):
-    product = get_object_or_404(_owned_queryset(DairyProduct, request.user), slug=slug)
-    form = DairyProductForm(
-        request.POST or None,
-        request.FILES or None,
-        instance=product,
-        user=request.user,
-    )
-    if request.method == "POST" and form.is_valid():
-        product = form.save(commit=False)
-        product.slug = _unique_slug(DairyProduct, product.name, current=product)
-        product.save()
-        messages.success(request, "Your dairy product has been updated.")
-        return redirect(product.get_absolute_url())
-    return render(
-        request,
-        "dairys/dairyproduct_form.html",
-        {"form": form, "form_title": "Update dairy product", "product": product},
-    )
-
-
-@login_required
-def dairy_product_delete(request, slug):
-    product = get_object_or_404(_owned_queryset(DairyProduct, request.user), slug=slug)
+def training(request):
     if request.method == "POST":
-        product.delete()
-        messages.success(request, "Your dairy product has been removed.")
-        return redirect("dairys:marketplace")
-    return render(
-        request,
-        "dairys/dairyproduct_confirm_delete.html",
-        {"product": product},
-    )
-
-
-@role_required(
-    UserRole.FARMER,
-    UserRole.SERVICE_PROVIDER,
-    UserRole.VETERINARIAN,
-)
-def dairy_service_create(request):
-    form = DairyServiceForm(request.POST or None, user=request.user)
-    if request.method == "POST" and form.is_valid():
-        service = form.save(commit=False)
-        service.provider = request.user
-        service.slug = _unique_slug(DairyService, service.name)
-        service.save()
-        messages.success(request, "Your dairy farm service has been listed.")
-        return redirect(service.get_absolute_url())
-    return render(
-        request,
-        "dairys/dairyservice_form.html",
-        {"form": form, "form_title": "Offer a dairy farm service"},
-    )
+        form = TrainingEnrollmentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Enrollment received. We will contact you soon.")
+            return redirect("dairys:training")
+    else:
+        form = TrainingEnrollmentForm()
+    return render(request, "dairys/training.html", {
+        "form": form,
+        "topics": [
+            (kind, DairyService.ServiceType(kind).label)
+            for kind in SERVICE_TYPES_BY_KIND[DairyService.ServiceKind.TRAINING]
+        ],
+        "offers": DairyService.objects.filter(service_kind=DairyService.ServiceKind.TRAINING, is_available=True),
+    })
 
 
 @login_required
-def dairy_service_update(request, slug):
-    service = get_object_or_404(_owned_queryset(DairyService, request.user), slug=slug)
-    form = DairyServiceForm(request.POST or None, instance=service, user=request.user)
-    if request.method == "POST" and form.is_valid():
-        service = form.save(commit=False)
-        service.slug = _unique_slug(DairyService, service.name, current=service)
-        service.save()
-        messages.success(request, "Your dairy farm service has been updated.")
-        return redirect(service.get_absolute_url())
-    return render(
-        request,
-        "dairys/dairyservice_form.html",
-        {"form": form, "form_title": "Update dairy farm service", "service": service},
-    )
-
-
-@login_required
-def dairy_service_delete(request, slug):
-    service = get_object_or_404(_owned_queryset(DairyService, request.user), slug=slug)
+def consultation_book(request, slug):
+    service = get_object_or_404(DairyService, slug=slug, is_available=True)
     if request.method == "POST":
-        service.delete()
-        messages.success(request, "Your dairy farm service has been removed.")
-        return redirect("dairys:marketplace")
-    return render(
-        request,
-        "dairys/dairyservice_confirm_delete.html",
-        {"service": service},
-    )
-
-
-@require_POST
-@login_required
-def like_dairy_product(request, product_id):
-    product = get_object_or_404(DairyProduct, pk=product_id)
-    return JsonResponse({"status": "success", "like_count": product.toggle_like(request.user)})
-
-
-@require_POST
-@login_required
-def share_dairy_product(_request, product_id):
-    product = get_object_or_404(DairyProduct, pk=product_id)
-    return JsonResponse({"status": "success", "share_count": product.increment_shares()})
+        form = DairyConsultationForm(request.POST)
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.service = service
+            booking.customer = request.user
+            booking.save()
+            messages.success(request, "Your consultation request has been sent.")
+            return redirect("dairys:dairy_service_detail", slug=slug)
+    else:
+        form = DairyConsultationForm()
+    return render(request, "dairys/consultation_book.html", {"service": service, "form": form})

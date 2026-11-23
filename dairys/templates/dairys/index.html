@@ -30,36 +30,90 @@
     <section id="dairy-services-id" class="dairy-home__services" aria-labelledby="dairy-services-title">
         <h2 id="dairy-services-title" class="dairy-home__section-title"><span>{% trans "Our Services" %}</span></h2>
         <div class="dairy-home__service-grid">
-            <a class="dairy-home__service-card dairy-home__service-card--milk" href="{% url 'dairys:marketplace' %}">
+            <a class="dairy-home__service-card dairy-home__service-card--milk" href="{% url 'dairys:Products' %}">
                 <span class="dairy-home__service-icon">
-                    <img src="{% static 'dairys/images/milk.jpg' %}" alt="Rooster illustration">
+                    <img src="{% static 'dairys/images/milk.jpg' %}" alt="{% trans 'Fresh milk and dairy products' %}">
                 </span>
                 <span class="dairy-home__service-copy">
-                    <h3>{% trans "Fresh Milk" %}</h3>
-                    <p>{% trans "Pure and nutritious milk from healthy cows." %}</p>
+                    <h3>{% trans "Fresh Milk & Dairy Products" %}</h3>
+                    <p>{% trans "Raw milk, butter, cheese, yogurt, ergo and ayib." %}</p>
                     <span class="dairy-home__card-link">{% trans "View More" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                 </span>
             </a>
-            <a class="dairy-home__service-card dairy-home__service-card--care" href="{% url 'dairys:marketplace' %}#dairy-services">
+            <a class="dairy-home__service-card dairy-home__service-card--care" href="{% url 'dairys:Items' %}">
                 <span class="dairy-home__service-icon">
-                    <img src="{% static 'dairys/images/dairy-items.jpg' %}" alt="Rooster illustration">
+                    <img src="{% static 'dairys/images/dairy-items.jpg' %}" alt="{% trans 'Dairy farm equipment and supplies' %}">
                 </span>
                 <span class="dairy-home__service-copy">
-                    <h3>{% trans "Dairy Items" %}</h3>
-                    <p>{% trans "Quality dairy products for your family and market." %}</p>
+                    <h3>{% trans "Dairy Farm Items" %}</h3>
+                    <p>{% trans "Milking, cooling, processing, feeding and farm health supplies." %}</p>
                     <span class="dairy-home__card-link">{% trans "View More" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                 </span>
             </a>
-            <a class="dairy-home__service-card dairy-home__service-card--training" href="{% url 'dairys:marketplace' %}">
+            <a class="dairy-home__service-card dairy-home__service-card--training" href="{% url 'dairys:CattleLiveStock' %}">
                 <span class="dairy-home__service-icon">
-                    <img src="{% static 'dairys/images/dairy-cows.jpg' %}" alt="Rooster illustration">
+                    <img src="{% static 'dairys/images/dairy-cows.jpg' %}" alt="{% trans 'Dairy cattle' %}">
                 </span>
                 <span class="dairy-home__service-copy">
-                    <h3>{% trans "Dairy Cows" %}</h3>
-                    <p>{% trans "Healthy and productive dairy cows." %}</p>
+                    <h3>{% trans "Dairy Cattle & Livestock" %}</h3>
+                    <p>{% trans "Cows, heifers, calves and breeding bulls." %}</p>
                     <span class="dairy-home__card-link">{% trans "View More" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                 </span>
             </a>
+        </div>
+    </section>
+
+    <section class="container py-4" aria-labelledby="dairy-categories-title">
+        <h2 id="dairy-categories-title" class="dairy-home__section-title">
+            <span>{% trans "Browse Dairy Categories" %}</span>
+        </h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h5">{% trans "Fresh Milk & Dairy Products" %}</h3>
+                        <p>{% trans "Browse raw milk by cow, goat or camel source, plus butter, cheese, yogurt, ergo and ayib." %}</p>
+                        <a href="{% url 'dairys:Products' %}">{% trans "Browse dairy products" %}</a>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-6">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h5">{% trans "Dairy Farm Items" %}</h3>
+                        <ul>
+                            <li><a href="{% url 'dairys:Items' %}?item_group=milking">{% trans "Milking & Handling" %}</a></li>
+                            <li><a href="{% url 'dairys:Items' %}?item_group=cooling">{% trans "Cooling & Storage" %}</a></li>
+                            <li><a href="{% url 'dairys:Items' %}?item_group=processing">{% trans "Processing" %}</a></li>
+                            <li><a href="{% url 'dairys:Items' %}?item_group=feeding">{% trans "Feeding & Bedding" %}</a></li>
+                            <li><a href="{% url 'dairys:Items' %}?item_group=infrastructure">{% trans "Infrastructure & Health" %}</a></li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-6">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h5">{% trans "Dairy Cattle & Livestock" %}</h3>
+                        <p>{% trans "Find dairy cows, heifers, calves and breeding bulls, with breed, age, lactation and milk-yield details." %}</p>
+                        <a href="{% url 'dairys:CattleLiveStock' %}">{% trans "Browse livestock" %}</a>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-3">
+                <article class="card h-100"><div class="card-body">
+                    <h3 class="h5">{% trans "Dairy Farm Training" %}</h3>
+                    <p>{% trans "Hygiene, feeding, calf rearing and processing workshops." %}</p>
+                    <a href="{% url 'dairys:Training' %}">{% trans "Browse training" %}</a>
+                </div></article>
+            </div>
+            <div class="col-md-3">
+                <article class="card h-100"><div class="card-body">
+                    <h3 class="h5">{% trans "Dairy Farm Consulting" %}</h3>
+                    <p>{% trans "Farm setup, herd health, breeding and milk-yield advisory." %}</p>
+                    <a href="{% url 'dairys:Consultancy' %}">{% trans "Browse consulting" %}</a>
+                </div></article>
+            </div>
         </div>
     </section>
 
@@ -69,7 +123,7 @@
             <div class="dairy-home__growth-copy">
                 <h2>{% trans "Dairy Farm" %}<br>{% trans "Consultancy" %}</h2>
                 <p>{% trans "Expert guidance for your dairy farm's success." %}</p>
-                <a class="dairy-home__button dairy-home__button--gold" href="{% url 'dairys:marketplace' %}">
+                <a class="dairy-home__button dairy-home__button--gold" href="{% url 'dairys:Consultancy' %}">
                     {% trans "Find a Consultant" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
                 </a>
             </div>
@@ -82,68 +136,13 @@
                 <li><i class="fas fa-circle-check" aria-hidden="true"></i> {% trans "Disease prevention and animal health" %}</li>
                 <li><i class="fas fa-circle-check" aria-hidden="true"></i> {% trans "Farm business planning and support" %}</li>
             </ul>
-            <a class="dairy-home__button dairy-home__button--green" href="{% url 'dairys:marketplace' %}#dairy-services">
+            <a class="dairy-home__button dairy-home__button--green" href="{% url 'dairys:Consultancy' %}">
                 {% trans "Get Consultation" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
             </a>
         </div>
     </section>
 
-    {% if featured_products %}
-    <section class="dairy-home__products" aria-labelledby="dairy-products-title">
-        <div class="dairy-home__section-heading">
-            <div>
-                <p class="dairy-home__eyebrow">{% trans "Selected from local farms" %}</p>
-                <h2 id="dairy-products-title">{% trans "Featured dairy products" %}</h2>
-            </div>
-            <a class="dairy-home__section-link" href="{% url 'dairys:marketplace' %}">
-                {% trans "See all products" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
-            </a>
-        </div>
-        <div class="dairy-home__product-grid">
-            {% for product in featured_products %}
-            <article class="dairy-home__product-card">
-                <a class="dairy-home__product-image" href="{{ product.get_absolute_url }}">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
-                    {% else %}
-                    <span aria-hidden="true"><i class="fas fa-bottle-water"></i></span>
-                    {% endif %}
-                </a>
-                <div class="dairy-home__product-info">
-                    <p>{{ product.category.name }} · {{ product.location }}</p>
-                    <h3><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
-                    <strong>{{ product.display_price }}</strong>
-                </div>
-            </article>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
 
-    {% if featured_services %}
-    <section class="dairy-home__community" aria-labelledby="dairy-community-title">
-        <div class="dairy-home__community-copy">
-            <p class="dairy-home__eyebrow">{% trans "Grow together" %}</p>
-            <h2 id="dairy-community-title">{% trans "Expert support for every dairy farm" %}</h2>
-            <p>{% trans "Connect with experienced service providers and get practical help for your herd, equipment and daily operations." %}</p>
-            <a class="dairy-home__button dairy-home__button--green" href="{% url 'dairys:marketplace' %}#dairy-services">
-                {% trans "Explore farm services" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
-            </a>
-        </div>
-        <div class="dairy-home__community-list">
-            {% for service in featured_services %}
-            <a class="dairy-home__community-item" href="{{ service.get_absolute_url }}">
-                <span class="dairy-home__community-icon"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i></span>
-                <span>
-                    <small>{{ service.get_service_type_display }} · {{ service.location }}</small>
-                    <strong>{{ service.name }}</strong>
-                </span>
-                <i class="fas fa-arrow-right" aria-hidden="true"></i>
-            </a>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
 </main>
 {% endblock %}
 

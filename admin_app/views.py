@@ -1,14 +1,12 @@
 from functools import wraps
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import render
-
 from companies.models import Farm
 from conversation.models import Conversation
-from dairys.models import DairyProduct, DairyService
+#from dairys.models import DairyProduct, DairyService
 from poultrys.models import (
     ChickenSeller,
     Consultant,
@@ -39,17 +37,17 @@ def dashboard(request):
     if search_form.is_valid():
         query = search_form.cleaned_data["q"]
 
-    dairy_products = DairyProduct.objects.select_related(
-        "category", "created_by", "farm"
-    )
+    #dairy_products = DairyProduct.objects.select_related(
+    #    "category", "created_by", "farm"
+    #)
     poultry_items = Item.objects.select_related("created_by", "farm")
     egg_orders = EggOrder.objects.select_related("seller", "seller__farm")
     if query:
-        dairy_products = dairy_products.filter(
-            Q(name__icontains=query)
-            | Q(farm__name__icontains=query)
-            | Q(created_by__username__icontains=query)
-        )
+        #dairy_products = dairy_products.filter(
+        #    Q(name__icontains=query)
+        #    | Q(farm__name__icontains=query)
+        #    | Q(created_by__username__icontains=query)
+        #)
         poultry_items = poultry_items.filter(
             Q(name__icontains=query)
             | Q(farm__name__icontains=query)
@@ -61,20 +59,20 @@ def dashboard(request):
         )
 
     user_model = get_user_model()
-    dairy_farms = Farm.objects.filter(
-        Q(dairy_products__isnull=False) | Q(dairy_services__isnull=False)
-    ).distinct()
+    #dairy_farms = Farm.objects.filter(
+     #   Q(dairy_products__isnull=False) | Q(dairy_services__isnull=False)
+    #).distinct()
     context = {
         "users_count": user_model.objects.count(),
-        "dairy_managers_count": user_model.objects.filter(
-            Q(dairy_products__isnull=False)
-            | Q(dairy_services__isnull=False)
-            | Q(farms__dairy_products__isnull=False)
-            | Q(farms__dairy_services__isnull=False)
-        ).distinct().count(),
-        "dairy_farms_count": dairy_farms.count(),
-        "dairy_products_count": DairyProduct.objects.count(),
-        "dairy_services_count": DairyService.objects.count(),
+       # "dairy_managers_count": user_model.objects.filter(
+        #    Q(dairy_products__isnull=False)
+         #   | Q(dairy_services__isnull=False)
+          #  | Q(farms__dairy_products__isnull=False)
+           # | Q(farms__dairy_services__isnull=False)
+        #).distinct().count(),
+        #"dairy_farms_count": dairy_farms.count(),
+        #"dairy_products_count": DairyProduct.objects.count(),
+        #"dairy_services_count": DairyService.objects.count(),
         "poultry_managers_count": user_model.objects.filter(
             Q(items__isnull=False)
             | Q(egg_seller__isnull=False)
@@ -92,7 +90,7 @@ def dashboard(request):
         "egg_sellers_count": EggSeller.objects.count(),
         "chicken_sellers_count": ChickenSeller.objects.count(),
         "egg_orders_count": EggOrder.objects.count(),
-        "dairy_products": dairy_products.order_by("-created_at")[:6],
+        #"dairy_products": dairy_products.order_by("-created_at")[:6],
         "poultry_items": poultry_items.order_by("-created_at")[:6],
         "egg_orders": egg_orders.order_by("-order_date")[:6],
         "search_form": search_form,
@@ -100,15 +98,15 @@ def dashboard(request):
     return render(request, "admin_app/dashboard.html", context)
 
 
-@admin_required
-def manage_dairys(request):
-    context = {
-        "dairy_products": DairyProduct.objects.select_related(
-            "category", "created_by", "farm"
-        ),
-        "dairy_services": DairyService.objects.select_related("provider", "farm"),
-    }
-    return render(request, "admin_app/manage_dairys.html", context)
+#@admin_required
+#def manage_dairys(request):
+ #   context = {
+  #      "dairy_products": DairyProduct.objects.select_related(
+   #         "category", "created_by", "farm"
+    #    ),
+     #   "dairy_services": DairyService.objects.select_related("provider", "farm"),
+    #}
+    #return render(request, "admin_app/manage_dairys.html", context)
 
 
 @admin_required

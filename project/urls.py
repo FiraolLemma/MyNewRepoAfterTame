@@ -64,14 +64,14 @@ urlpatterns += i18n_patterns(
     path('contact/', include('contact.urls' , namespace='contact')),
     path('companies/', include('companies.urls')),
     path('dairys/', include('dairys.urls', namespace='dairys')),
-    path(
-        'dairys/',
-        RedirectView.as_view(
-            pattern_name='dairys:marketplace',
-            permanent=True,
-            query_string=True,
-        ),
-    ),
+    #path(
+     #   'dairys/',
+      #  RedirectView.as_view(
+       #     pattern_name='dairys:marketplace',
+        #    permanent=True,
+         #   query_string=True,
+        #),
+    #),
     path('cart/', include('cart.urls', namespace='cart')),
     path("__reload__/", include("django_browser_reload.urls")),
     path("admin-app/", include("admin_app.urls", namespace="admin_app")),
