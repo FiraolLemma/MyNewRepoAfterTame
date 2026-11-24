@@ -7,7 +7,12 @@ from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods
 
-from .forms import DairyConsultationForm, DairyProductForm, DairyServiceForm
+from .forms import (
+    DairyConsultationForm,
+    DairyLivestockForm,
+    DairyProductForm,
+    DairyServiceForm,
+)
 from .models import DairyProduct, DairyService
 
 
@@ -145,11 +150,38 @@ def cattle_livestock(request):
 
 def cattle_livestock_detail(request, cattle_livestock_id):
     product = get_object_or_404(
-        DairyProduct,
+        DairyProduct.objects.select_related("company", "created_by", "farm"),
         pk=cattle_livestock_id,
         main_category="livestock",
     )
     return render(request, "dairys/cattle_livestock_detail.html", {"product": product})
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def cattle_livestock_create(request):
+    if request.method == "POST":
+        form = DairyLivestockForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.main_category = "livestock"
+            product.created_by = request.user
+
+            base_slug = slugify(product.name)[:180].strip("-") or "dairy-livestock"
+            product.slug = base_slug
+            suffix = 2
+            while DairyProduct.objects.filter(slug=product.slug).exists():
+                suffix_text = f"-{suffix}"
+                product.slug = f"{base_slug[:180 - len(suffix_text)]}{suffix_text}"
+                suffix += 1
+
+            product.save()
+            messages.success(request, _("Your livestock listing is now published."))
+            return redirect("dairys:cattle_livestock_detail", cattle_livestock_id=product.pk)
+    else:
+        form = DairyLivestockForm(user=request.user)
+
+    return render(request, "dairys/cattle_livestock_create.html", {"form": form})
 
 
 @require_GET

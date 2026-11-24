@@ -18,7 +18,17 @@ class DairyCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(DairyProduct)
 class DairyProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "main_category", "category", "item_group", "price", "location", "is_featured")
+    list_display = (
+        "name",
+        "main_category",
+        "category",
+        "item_group",
+        "livestock_type",
+        "breed",
+        "price",
+        "location",
+        "is_featured",
+    )
     list_filter = ("main_category", "category", "item_group", "is_featured", "milk_source", "livestock_type")
     search_fields = ("name", "description", "breed", "location")
     prepopulated_fields = {"slug": ("name",)}

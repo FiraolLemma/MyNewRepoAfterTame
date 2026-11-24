@@ -6,7 +6,141 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import DairyConsultation, DairyService
+from .models import DairyConsultation, DairyProduct, DairyService
+
+
+class DairyLivestockTests(TestCase):
+    def setUp(self):
+        self.seller = get_user_model().objects.create_user(
+            username="livestock-seller",
+            phone_number="+251911111103",
+            password="7391",
+        )
+
+    def create_listing(self, **overrides):
+        values = {
+            "name": "Highland Dairy Cow",
+            "slug": "highland-dairy-cow",
+            "description": "Healthy cow with a calm temperament.",
+            "price": Decimal("42000.00"),
+            "main_category": "livestock",
+            "livestock_type": "dairy_cow",
+            "breed": "Holstein",
+            "age_months": 48,
+            "daily_milk_yield": Decimal("12.50"),
+            "location": "Bishoftu",
+            "created_by": self.seller,
+        }
+        values.update(overrides)
+        return DairyProduct.objects.create(**values)
+
+    def test_guest_can_browse_and_filter_livestock_listings(self):
+        cow = self.create_listing()
+        goat = self.create_listing(
+            name="Local Goat",
+            slug="local-goat",
+            livestock_type="goat",
+            breed="Afar",
+        )
+
+        response = self.client.get(reverse("dairys:cattle_livestock"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, cow.name)
+        self.assertContains(response, goat.name)
+        self.assertContains(response, reverse("dairys:cattle_livestock_create"))
+        self.assertContains(response, 'data-filter="goat"')
+
+    def test_guest_can_view_livestock_details_and_buy_available_listing(self):
+        listing = self.create_listing()
+
+        response = self.client.get(
+            reverse(
+                "dairys:cattle_livestock_detail",
+                kwargs={"cattle_livestock_id": listing.pk},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, listing.name)
+        self.assertContains(response, "Holstein")
+        self.assertContains(response, "12.50 liters")
+        self.assertContains(
+            response,
+            reverse("cart:add_to_cart", args=("dairys", "dairyproduct", listing.pk)),
+        )
+
+    def test_livestock_listing_creation_requires_login(self):
+        response = self.client.get(reverse("dairys:cattle_livestock_create"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("users:login"), response.url)
+
+    def test_seller_can_create_livestock_listing(self):
+        self.client.force_login(self.seller)
+
+        response = self.client.post(
+            reverse("dairys:cattle_livestock_create"),
+            {
+                "name": "Afar Goat",
+                "livestock_type": "goat",
+                "breed": "Afar",
+                "description": "Healthy and vaccinated.",
+                "price": "8500.00",
+                "age_months": "18",
+                "quantity_available": "2",
+                "unit": "animals",
+                "location": "Adama",
+            },
+        )
+
+        listing = DairyProduct.objects.get(name="Afar Goat")
+        self.assertRedirects(
+            response,
+            reverse(
+                "dairys:cattle_livestock_detail",
+                kwargs={"cattle_livestock_id": listing.pk},
+            ),
+        )
+        self.assertEqual(listing.created_by, self.seller)
+        self.assertEqual(listing.main_category, "livestock")
+        self.assertEqual(listing.livestock_type, "goat")
+        self.assertEqual(listing.slug, "afar-goat")
+
+    def test_seller_cannot_submit_negative_daily_milk_yield(self):
+        self.client.force_login(self.seller)
+
+        response = self.client.post(
+            reverse("dairys:cattle_livestock_create"),
+            {
+                "name": "Cow with invalid yield",
+                "livestock_type": "dairy_cow",
+                "description": "A test listing.",
+                "price": "12000.00",
+                "daily_milk_yield": "-1.00",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ensure this value is greater than or equal to 0.")
+        self.assertFalse(DairyProduct.objects.filter(name="Cow with invalid yield").exists())
+
+    def test_seller_cannot_submit_livestock_without_an_animal_type(self):
+        self.client.force_login(self.seller)
+
+        response = self.client.post(
+            reverse("dairys:cattle_livestock_create"),
+            {
+                "name": "Uncategorized Animal",
+                "livestock_type": "",
+                "description": "A listing without a selected type.",
+                "price": "1000.00",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "This field is required.")
+        self.assertFalse(DairyProduct.objects.filter(name="Uncategorized Animal").exists())
 
 
 class DairyConsultancyTests(TestCase):

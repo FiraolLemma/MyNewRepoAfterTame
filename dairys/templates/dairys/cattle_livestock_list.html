@@ -68,6 +68,9 @@
                             <option value="name">Name: A to Z</option>
                         </select>
                     </label>
+                    <a class="livestock-create-link" href="{% url 'dairys:cattle_livestock_create' %}">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> List livestock
+                    </a>
                 </div>
             </header>
 
@@ -78,6 +81,7 @@
                          data-category="{{ product.livestock_type|default:'' }}"
                          data-price="{{ product.price }}"
                          data-name="{{ product.name|lower }}"
+                         data-search="{{ product.name }} {{ product.get_livestock_type_display }} {{ product.breed }} {{ product.location }} {% if product.farm %}{{ product.farm.name }}{% elif product.company %}{{ product.company.name }}{% else %}{{ product.created_by.get_full_name|default:product.created_by.username }}{% endif %}"
                          data-created="{{ product.created_at|date:'U' }}">
                     <a class="livestock-card__image-link" href="{% url 'dairys:cattle_livestock_detail' product.pk %}" aria-label="View {{ product.name }}">
                         {% if product.main_image %}
@@ -99,9 +103,13 @@
                             {% if product.location %}<span aria-hidden="true"> &middot; </span>{{ product.location }}{% endif %}
                         </p>
                         <div class="livestock-card__actions">
+                            {% if product.quantity_available %}
                             <a class="livestock-button livestock-button--cart" href="{% url 'cart:add_to_cart' 'dairys' 'dairyproduct' product.pk %}">
                                 <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Add to Cart
                             </a>
+                            {% else %}
+                            <span class="livestock-button livestock-button--unavailable" aria-label="Sold out">Sold</span>
+                            {% endif %}
                             <a class="livestock-button livestock-button--view" href="{% url 'dairys:cattle_livestock_detail' product.pk %}">
                                 <i class="fa-solid fa-eye" aria-hidden="true"></i> View
                             </a>

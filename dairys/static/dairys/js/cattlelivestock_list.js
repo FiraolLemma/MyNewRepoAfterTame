@@ -17,7 +17,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         cards.forEach(function (card) {
             const matchesCategory = activeCategory === "all" || card.dataset.category === activeCategory;
-            const matchesSearch = !query || (card.dataset.name || "").includes(query);
+            const searchText = (card.dataset.search || card.dataset.name || "").toLocaleLowerCase();
+            const matchesSearch = !query || searchText.includes(query);
             const isVisible = matchesCategory && matchesSearch;
             card.hidden = !isVisible;
             if (isVisible) visibleCount += 1;

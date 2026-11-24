@@ -11,7 +11,16 @@ urlpatterns = [
     path("products/create/", views.product_create, name="product_create"),
     path("products/<slug:slug>/", views.product_detail, name="product_detail"),
     path("cattle-livestock/", views.cattle_livestock, name="cattle_livestock"),
-    path("cattle-livestock/<int:cattle_livestock_id>/", views.cattle_livestock_detail, name="cattle_livestock_detail"),
+    path(
+        "cattle-livestock/create/",
+        views.cattle_livestock_create,
+        name="cattle_livestock_create",
+    ),
+    path(
+        "cattle-livestock/<int:cattle_livestock_id>/",
+        views.cattle_livestock_detail,
+        name="cattle_livestock_detail",
+    ),
     path(
         "veterinary-consulting/",
         views.veterinary_consultancy,

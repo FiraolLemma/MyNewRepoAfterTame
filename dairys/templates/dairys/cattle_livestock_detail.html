@@ -1,5 +1,78 @@
 {% extends "base/base.html" %}
-{% block title %}Cattle/Livestock Detail{% endblock %}
+{% load static %}
+
+{% block title %}{{ product.name }} | Dairy Cattle &amp; Livestock{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/cattlelivestock_detail.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-h1>Cattle/Livestock Detail</h1>
+<main class="dairy-livestock-detail">
+    <nav class="livestock-detail__breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'dairys:cattle_livestock' %}">
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to Livestock
+        </a>
+        <span aria-hidden="true">/</span>
+        <span>{{ product.get_livestock_type_display|default:"Livestock" }}</span>
+    </nav>
+
+    <article class="livestock-detail__card">
+        <div class="livestock-detail__photo">
+            {% if product.main_image %}
+            <img src="{{ product.main_image.url }}"
+                 alt="{{ product.name }}"
+                 data-livestock-detail-image
+                 data-fallback="https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&amp;fit=crop&amp;w=1000&amp;q=85">
+            {% else %}
+            <img src="https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&amp;fit=crop&amp;w=1000&amp;q=85"
+                 alt="{{ product.name }}"
+                 data-livestock-detail-image>
+            {% endif %}
+        </div>
+
+        <div class="livestock-detail__content">
+            <span class="livestock-detail__category">{{ product.get_livestock_type_display|default:"Livestock" }}</span>
+            <h1>{{ product.name }}</h1>
+            <p class="livestock-detail__price">ETB {{ product.price|floatformat:"2" }}</p>
+            <div class="livestock-detail__seller">
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+                <span>{{ product.sellername }}</span>
+                {% if product.farm %}<span aria-hidden="true"> · </span><span>{{ product.farm.name }}</span>{% endif %}
+            </div>
+
+            <p class="livestock-detail__description">{{ product.description|linebreaksbr }}</p>
+
+            <dl class="livestock-detail__facts">
+                {% if product.breed %}<div><dt>Breed</dt><dd>{{ product.breed }}</dd></div>{% endif %}
+                {% if product.age_months != None %}<div><dt>Age</dt><dd>{{ product.age_months }} months</dd></div>{% endif %}
+                {% if product.lactation_status %}<div><dt>Lactation status</dt><dd>{{ product.lactation_status }}</dd></div>{% endif %}
+                {% if product.daily_milk_yield != None %}<div><dt>Daily milk yield</dt><dd>{{ product.daily_milk_yield|floatformat:"2" }} liters</dd></div>{% endif %}
+                <div>
+                    <dt>Availability</dt>
+                    <dd>{% if product.quantity_available %}{{ product.quantity_available }}{% if product.unit %} {{ product.unit }}{% else %} available{% endif %}{% else %}Sold{% endif %}</dd>
+                </div>
+                {% if product.location %}<div><dt>Location</dt><dd>{{ product.location }}</dd></div>{% endif %}
+                <div><dt>Listed</dt><dd>{{ product.created_at|date:"M j, Y" }}</dd></div>
+            </dl>
+
+            <div class="livestock-detail__actions">
+                {% if product.quantity_available %}
+                <a class="livestock-detail__cart" href="{% url 'cart:add_to_cart' 'dairys' 'dairyproduct' product.pk %}">
+                    <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Add to Cart
+                </a>
+                {% endif %}
+                <button class="livestock-detail__share" type="button" data-livestock-share>
+                    <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Share
+                </button>
+            </div>
+            <p class="livestock-detail__status" data-livestock-share-status aria-live="polite"></p>
+        </div>
+    </article>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'dairys/js/cattlelivestock_detail.js' %}"></script>
 {% endblock %}

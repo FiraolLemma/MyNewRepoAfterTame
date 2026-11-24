@@ -6,6 +6,59 @@ from companies.forms import OrganizationSelectionMixin
 from .models import DairyConsultation, DairyProduct, DairyService
 
 
+class DairyLivestockForm(OrganizationSelectionMixin, forms.ModelForm):
+    class Meta:
+        model = DairyProduct
+        fields = (
+            "name",
+            "livestock_type",
+            "breed",
+            "description",
+            "price",
+            "age_months",
+            "lactation_status",
+            "daily_milk_yield",
+            "quantity_available",
+            "unit",
+            "location",
+            "main_image",
+            "company",
+            "farm",
+        )
+        labels = {
+            "name": _("Listing title"),
+            "livestock_type": _("Animal type"),
+            "age_months": _("Age (months)"),
+            "daily_milk_yield": _("Average daily milk yield (liters)"),
+            "quantity_available": _("Number available"),
+            "unit": _("Availability unit"),
+            "main_image": _("Livestock photo"),
+        }
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 5}),
+            "price": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
+            "age_months": forms.NumberInput(attrs={"min": "0", "step": "1"}),
+            "daily_milk_yield": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
+            "quantity_available": forms.NumberInput(attrs={"min": "0", "step": "1"}),
+            "main_image": forms.ClearableFileInput(attrs={"accept": "image/*"}),
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, user=user, **kwargs)
+        self.fields["livestock_type"].required = True
+        self.fields["description"].help_text = _(
+            "Include health, temperament, and other details buyers should know."
+        )
+        for field in self.fields.values():
+            field.widget.attrs.setdefault(
+                "class",
+                "livestock-create__control",
+            )
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip()
+
+
 class DairyProductForm(OrganizationSelectionMixin, forms.ModelForm):
     class Meta:
         model = DairyProduct

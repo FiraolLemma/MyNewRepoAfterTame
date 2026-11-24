@@ -227,6 +227,32 @@
     font-weight: 650;
 }
 
+.livestock-create-link {
+    display: inline-flex;
+    min-height: 33px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 6px;
+    padding: 6px 10px;
+    background: var(--livestock-green);
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 750;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.livestock-create-link:hover {
+    background: var(--livestock-deep-green);
+    color: #fff;
+}
+
+.livestock-create-link:focus-visible {
+    outline: 2px solid #21a768;
+    outline-offset: 2px;
+}
+
 .livestock-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -355,6 +381,12 @@
     background: #f0faf4;
 }
 
+.livestock-button--unavailable {
+    background: #f1f3f2;
+    color: #687982;
+    cursor: not-allowed;
+}
+
 .livestock-empty,
 .livestock-no-match {
     grid-column: 1 / -1;
@@ -466,6 +498,7 @@
 
     .livestock-results__tools {
         width: 100%;
+        flex-wrap: wrap;
     }
 
     .livestock-search {

@@ -83,6 +83,8 @@ class DairyProduct(models.Model):
         ("heifer", _("Heifer")),
         ("calf", _("Calf")),
         ("bull", _("Breeding bull / sire")),
+        ("goat", _("Goat")),
+        ("sheep", _("Sheep")),
     ]
 
     name = models.CharField(max_length=160)
@@ -114,6 +116,7 @@ class DairyProduct(models.Model):
         help_text=_("Average liters per day"),
         blank=True,
         null=True,
+        validators=[MinValueValidator(0)],
     )
     is_featured = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -162,11 +165,7 @@ class DairyProduct(models.Model):
 
     @property
     def seller_name(self):
-        if self.farm_id:
-            return self.farm.name
-        if self.company_id:
-            return self.company.name
-        return self.created_by.get_full_name() or self.created_by.get_username()
+        return self.created_by.get_full_name() or self.created_by.username
 
 
 class DairyService(models.Model):
