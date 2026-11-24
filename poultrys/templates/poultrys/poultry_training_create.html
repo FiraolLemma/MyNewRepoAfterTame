@@ -1,0 +1,55 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Publish a Poultry Training | Sheger City" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'poultrys/css/poultry_trainings.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="poultry-training poultry-training-form-page">
+    {% include "poultrys/poultry_training_messages.html" %}
+    <a class="poultry-training-back-link" href="{% url 'poultrys:poultry_trainings' %}">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> {% trans "Back to trainings" %}
+    </a>
+    <div class="poultry-training-form-layout">
+        <section class="poultry-training-form-panel" aria-labelledby="poultry-course-form-title">
+            <span class="poultry-training-eyebrow poultry-training-eyebrow--green"><i class="fas fa-seedling" aria-hidden="true"></i> {% trans "Teach poultry farmers" %}</span>
+            <h1 id="poultry-course-form-title">{% trans "Publish a training course" %}</h1>
+            <p class="poultry-training-form-intro">{% trans "Share your expertise, course schedule, and location so poultry farmers can find and join your training." %}</p>
+            <form method="post" class="poultry-training-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="poultry-training-form__grid">
+                    {% for field in form %}
+                    <div class="poultry-training-form__field{% if field.name == 'description' %} poultry-training-form__field--wide{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span aria-hidden="true"> *</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<p class="poultry-training-form__help">{{ field.help_text }}</p>{% endif %}
+                        {{ field.errors }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="poultry-training-form__actions">
+                    <a class="poultry-training-button poultry-training-button--muted" href="{% url 'poultrys:poultry_trainings' %}">{% trans "Cancel" %}</a>
+                    <button class="poultry-training-button poultry-training-button--enroll" type="submit">
+                        <i class="fas fa-check" aria-hidden="true"></i> {% trans "Publish course" %}
+                    </button>
+                </div>
+            </form>
+        </section>
+        <aside class="poultry-training-form-aside">
+            <span class="poultry-training-form-aside__icon"><i class="fas fa-chalkboard-user" aria-hidden="true"></i></span>
+            <h2>{% trans "Reach farmers who want to grow" %}</h2>
+            <p>{% trans "A clear title, course date, and description help farmers choose the right training for their farms." %}</p>
+            <ul>
+                <li><i class="fas fa-check" aria-hidden="true"></i> {% trans "Choose a poultry program" %}</li>
+                <li><i class="fas fa-check" aria-hidden="true"></i> {% trans "Set the date, format, and duration" %}</li>
+                <li><i class="fas fa-check" aria-hidden="true"></i> {% trans "Review registrations in your training dashboard" %}</li>
+            </ul>
+        </aside>
+    </div>
+</main>
+{% endblock %}

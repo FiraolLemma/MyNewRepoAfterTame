@@ -7,12 +7,15 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_http_methods
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from cart.models import CartItem
 from cart.views import _get_cart
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from django.utils.text import slugify
 import json
 from .models import Consultant, ConsultationService, ConsultationBooking
 from .forms import ConsultationBookingForm
@@ -25,9 +28,9 @@ from django.contrib.auth.decorators import login_required
 from .models import ChickenSeller
 from .forms import ChickenSellerForm
 from django.shortcuts import render, redirect
-from .forms import TrainingEnrollmentForm
+from .forms import PoultryTrainingEnrollmentForm, PoultryTrainingForm
 from django.contrib import messages
-from .models import TrainingEnrollment
+from .models import PoultryTraining, TrainingEnrollment
 from django.utils.decorators import method_decorator
 from decimal import Decimal, InvalidOperation
 from companies.models import Farm
@@ -568,18 +571,170 @@ def delete_egg_seller_ajax(request, pk):
         'message': f'{seller_name} has been deleted successfully!',
     })
 
+@require_GET
 def poultry_trainings(request):
-    if request.method == 'POST':
-        form = TrainingEnrollmentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "🎉 Enrollment successful! We will contact you soon.")
-            return redirect('poultrys:poultry_trainings')
+    trainings = PoultryTraining.objects.filter(
+        is_available=True,
+        training_date__gte=timezone.localdate(),
+    )
+    program = request.GET.get("program", "").strip()
+    search_query = request.GET.get("q", "").strip()[:100]
+    valid_programs = {value for value, _ in PoultryTraining.PROGRAM_CHOICES}
+    if program in valid_programs:
+        trainings = trainings.filter(program=program)
     else:
-        form = TrainingEnrollmentForm()
-    return render(request, 'poultrys/poultry_trainings.html', {'form': form})
+        program = ""
+
+    if search_query:
+        trainings = trainings.filter(
+            Q(name__icontains=search_query)
+            | Q(program__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(location__icontains=search_query)
+            | Q(provider__username__icontains=search_query)
+        )
+
+    return render(
+        request,
+        "poultrys/poultry_trainings.html",
+        {
+            "trainings": trainings.select_related("provider"),
+            "training_count": trainings.count(),
+            "programs": PoultryTraining.PROGRAM_CHOICES,
+            "selected_program": program,
+            "search_query": search_query,
+        },
+    )
+
 
 @login_required
+@require_http_methods(["GET", "POST"])
+def poultry_training_create(request):
+    if request.method == "POST":
+        form = PoultryTrainingForm(request.POST)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.provider = request.user
+
+            base_slug = slugify(course.name)[:180].strip("-") or "poultry-training"
+            course.slug = base_slug
+            suffix = 2
+            while PoultryTraining.objects.filter(slug=course.slug).exists():
+                suffix_text = f"-{suffix}"
+                course.slug = f"{base_slug[:180 - len(suffix_text)]}{suffix_text}"
+                suffix += 1
+
+            course.save()
+            messages.success(request, _("Your poultry training course is now listed."))
+            return redirect(
+                "poultrys:poultry_training_detail",
+                slug=course.slug,
+            )
+    else:
+        form = PoultryTrainingForm()
+
+    return render(
+        request,
+        "poultrys/poultry_training_create.html",
+        {"form": form},
+    )
+
+
+@require_GET
+def poultry_training_detail(request, slug):
+    course = get_object_or_404(
+        PoultryTraining.objects.select_related("provider"),
+        slug=slug,
+        is_available=True,
+    )
+    is_owner = request.user.is_authenticated and course.provider_id == request.user.pk
+    is_registered = (
+        request.user.is_authenticated
+        and TrainingEnrollment.objects.filter(
+            training=course,
+            trainee=request.user,
+        ).exists()
+    )
+    return render(
+        request,
+        "poultrys/poultry_training_detail.html",
+        {
+            "course": course,
+            "is_owner": is_owner,
+            "is_registered": is_registered,
+            "is_past": course.training_date < timezone.localdate(),
+            "enrollment_count": course.enrollments.count(),
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def poultry_training_enroll(request, slug):
+    course = get_object_or_404(
+        PoultryTraining.objects.select_related("provider"),
+        slug=slug,
+        is_available=True,
+    )
+    if course.training_date < timezone.localdate():
+        messages.error(request, _("Registration for this training has closed."))
+        return redirect("poultrys:poultry_training_detail", slug=course.slug)
+    if course.provider_id == request.user.pk:
+        messages.error(request, _("You cannot enroll in your own training course."))
+        return redirect("poultrys:poultry_training_detail", slug=course.slug)
+
+    if request.method == "POST":
+        form = PoultryTrainingEnrollmentForm(
+            request.POST,
+            training=course,
+            trainee=request.user,
+        )
+        if form.is_valid():
+            enrollment = form.save(commit=False)
+            enrollment.training = course
+            enrollment.trainee = request.user
+            enrollment.program = course.program
+            enrollment.save()
+            messages.success(
+                request,
+                _("You are registered for %(course)s.") % {"course": course.name},
+            )
+            return redirect("poultrys:poultry_training_detail", slug=course.slug)
+    else:
+        form = PoultryTrainingEnrollmentForm(training=course, trainee=request.user)
+
+    return render(
+        request,
+        "poultrys/poultry_training_enroll.html",
+        {"form": form, "course": course},
+    )
+
+
+def _render_poultry_training_dashboard(request):
+    courses = (
+        PoultryTraining.objects.filter(provider=request.user)
+        .prefetch_related("enrollments__trainee")
+        .order_by("-created_at")
+    )
+    enrollments = (
+        TrainingEnrollment.objects.filter(trainee=request.user)
+        .select_related("training", "training__provider")
+        .order_by("-created_at")
+    )
+    return render(
+        request,
+        "poultrys/poultry_trainees.html",
+        {"courses": courses, "enrollments": enrollments},
+    )
+
+
+@login_required
+@require_GET
+def poultry_training_dashboard(request):
+    return _render_poultry_training_dashboard(request)
+
+
+@login_required
+@require_GET
 def poultry_trainees(request):
-    trainees = TrainingEnrollment.objects.all().order_by('-created_at')
-    return render(request, 'poultrys/poultry_trainees.html', {'trainees': trainees})
+    return _render_poultry_training_dashboard(request)

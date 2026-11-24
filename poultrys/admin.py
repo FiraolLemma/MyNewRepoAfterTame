@@ -11,7 +11,7 @@ from .models import EggSeller, EggOrder
 
 # chicken for sell
 from django.utils.translation import gettext_lazy as _
-from .models import ChickenSeller
+from .models import ChickenSeller, PoultryTraining, TrainingEnrollment
 
 class SubImageInline(admin.TabularInline):
     model = SubImage
@@ -113,3 +113,49 @@ class ChickenSellerAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(PoultryTraining)
+class PoultryTrainingAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "program",
+        "training_date",
+        "duration_hours",
+        "provider",
+        "price",
+        "is_available",
+        "created_at",
+    )
+    list_filter = ("program", "training_format", "training_date", "is_available")
+    search_fields = ("name", "description", "provider__username", "location")
+    list_select_related = ("provider",)
+    readonly_fields = ("created_at",)
+    prepopulated_fields = {"slug": ("name",)}
+    list_per_page = 30
+
+
+@admin.register(TrainingEnrollment)
+class TrainingEnrollmentAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "training",
+        "get_program_display",
+        "trainee",
+        "email",
+        "phone",
+        "status",
+        "created_at",
+    )
+    list_filter = ("status", "program", "training__program")
+    search_fields = (
+        "name",
+        "email",
+        "phone",
+        "training__name",
+        "trainee__username",
+        "training__provider__username",
+    )
+    list_select_related = ("training", "trainee", "training__provider")
+    readonly_fields = ("created_at",)
+    list_per_page = 30

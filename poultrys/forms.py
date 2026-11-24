@@ -3,11 +3,12 @@ from django import forms
 from .models import Item, SubImage
 from companies.forms import OrganizationSelectionMixin
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from .models import ConsultationBooking, Consultant, ConsultationService
 from .models import EggSeller, EggOrder
 from .models import ChickenSeller
 from django import forms
-from .models import TrainingEnrollment
+from .models import PoultryTraining, TrainingEnrollment
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -216,3 +217,102 @@ class TrainingEnrollmentForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your phone number'}),
             'program': forms.Select(attrs={'class': 'form-control'}),
         }
+
+
+class PoultryTrainingForm(forms.ModelForm):
+    class Meta:
+        model = PoultryTraining
+        fields = (
+            "name",
+            "program",
+            "description",
+            "training_format",
+            "training_date",
+            "duration_hours",
+            "schedule",
+            "location",
+            "service_area",
+            "availability",
+            "price",
+        )
+        labels = {
+            "name": _("Course title"),
+            "program": _("Poultry program"),
+            "description": _("Course description"),
+            "training_format": _("Training format"),
+            "training_date": _("Training date"),
+            "duration_hours": _("Duration (hours)"),
+            "schedule": _("Schedule or session times"),
+            "location": _("Training location"),
+            "service_area": _("Areas served"),
+            "availability": _("Available places or enrollment details"),
+            "price": _("Course fee (ETB)"),
+        }
+        widgets = {
+            "description": forms.Textarea(
+                attrs={"rows": 5, "maxlength": "2000"}
+            ),
+            "training_date": forms.DateInput(attrs={"type": "date"}),
+            "duration_hours": forms.NumberInput(attrs={"min": "1", "step": "1"}),
+            "price": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["training_date"].widget.attrs["min"] = timezone.localdate().isoformat()
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "poultry-training-form__control")
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip()
+
+    def clean_training_date(self):
+        training_date = self.cleaned_data["training_date"]
+        if training_date < timezone.localdate():
+            raise forms.ValidationError(_("Choose today or a future date."))
+        return training_date
+
+
+class PoultryTrainingEnrollmentForm(forms.ModelForm):
+    class Meta:
+        model = TrainingEnrollment
+        fields = ("name", "email", "phone")
+        labels = {
+            "name": _("Your name"),
+            "email": _("Email address"),
+            "phone": _("Phone number"),
+        }
+        widgets = {
+            "name": forms.TextInput(attrs={"autocomplete": "name"}),
+            "email": forms.EmailInput(attrs={"autocomplete": "email"}),
+            "phone": forms.TelInput(attrs={"autocomplete": "tel"}),
+        }
+
+    def __init__(self, *args, training, trainee, **kwargs):
+        self.training = training
+        self.trainee = trainee
+        initial = kwargs.get("initial") or {}
+        initial.setdefault("name", trainee.username)
+        initial.setdefault("email", trainee.email or "")
+        initial.setdefault("phone", trainee.phone_number)
+        kwargs["initial"] = initial
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "poultry-training-form__control")
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip()
+
+    def clean_phone(self):
+        return self.cleaned_data["phone"].strip()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if TrainingEnrollment.objects.filter(
+            training=self.training,
+            trainee=self.trainee,
+        ).exists():
+            raise forms.ValidationError(
+                _("You are already registered for this training.")
+            )
+        return cleaned_data

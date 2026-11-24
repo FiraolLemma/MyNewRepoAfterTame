@@ -1,9 +1,12 @@
 import json
+from datetime import timedelta
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from .forms import ConsultationBookingForm
 from .models import (
@@ -11,6 +14,8 @@ from .models import (
     Consultant,
     EggOrder,
     EggSeller,
+    PoultryTraining,
+    TrainingEnrollment,
 )
 from users.roles import UserRole, role_group_name
 from virtual_users.models import VirtualAgent
@@ -49,6 +54,224 @@ class PoultryLandingPageTests(TestCase):
                     status_code=301,
                     fetch_redirect_response=False,
                 )
+
+
+class PoultryTrainingTests(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.trainer = user_model.objects.create_user(
+            username="poultry-trainer",
+            phone_number="+251911111140",
+            password="7391",
+        )
+        self.farmer = user_model.objects.create_user(
+            username="poultry-trainee",
+            phone_number="+251911111141",
+            password="7391",
+            email="trainee@example.com",
+        )
+        self.course = self.create_course()
+
+    def create_course(self, **overrides):
+        values = {
+            "name": "Modern Poultry Farming",
+            "slug": "modern-poultry-farming",
+            "program": "meat_chickens",
+            "description": "Practical broiler farming and flock management.",
+            "training_format": "in_person",
+            "training_date": timezone.localdate() + timedelta(days=7),
+            "duration_hours": 2,
+            "location": "Adama",
+            "price": Decimal("150.00"),
+            "provider": self.trainer,
+        }
+        values.update(overrides)
+        return PoultryTraining.objects.create(**values)
+
+    def enroll(self, course=None, **overrides):
+        values = {
+            "name": self.farmer.username,
+            "email": self.farmer.email,
+            "phone": self.farmer.phone_number,
+        }
+        values.update(overrides)
+        return self.client.post(
+            reverse(
+                "poultrys:poultry_training_enroll",
+                kwargs={"slug": (course or self.course).slug},
+            ),
+            values,
+        )
+
+    def test_guest_can_browse_and_filter_available_courses(self):
+        other_course = self.create_course(
+            name="Layer Chicken Management",
+            slug="layer-chicken-management",
+            program="layer_chickens",
+        )
+
+        response = self.client.get(
+            reverse("poultrys:poultry_trainings"),
+            {"program": "meat_chickens"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.course.name)
+        self.assertNotContains(response, other_course.name)
+        self.assertContains(response, reverse("poultrys:poultry_training_create"))
+
+    def test_trainer_can_publish_a_dated_course(self):
+        self.client.force_login(self.trainer)
+        training_date = timezone.localdate() + timedelta(days=14)
+
+        response = self.client.post(
+            reverse("poultrys:poultry_training_create"),
+            {
+                "name": "Layer Chicken Management",
+                "program": "layer_chickens",
+                "description": "Hands-on layer flock management.",
+                "training_format": "online",
+                "training_date": training_date.isoformat(),
+                "duration_hours": "3",
+                "schedule": "Saturday morning",
+                "location": "",
+                "service_area": "All regions",
+                "availability": "20 places",
+                "price": "0",
+            },
+        )
+
+        course = PoultryTraining.objects.get(name="Layer Chicken Management")
+        self.assertRedirects(
+            response,
+            reverse("poultrys:poultry_training_detail", kwargs={"slug": course.slug}),
+        )
+        self.assertEqual(course.provider, self.trainer)
+        self.assertEqual(course.program, "layer_chickens")
+        self.assertEqual(course.training_date, training_date)
+        self.assertEqual(course.slug, "layer-chicken-management")
+
+    def test_trainer_cannot_publish_a_past_course_date(self):
+        self.client.force_login(self.trainer)
+
+        response = self.client.post(
+            reverse("poultrys:poultry_training_create"),
+            {
+                "name": "Past poultry course",
+                "program": "meat_chickens",
+                "description": "A course in the past.",
+                "training_format": "online",
+                "training_date": (timezone.localdate() - timedelta(days=1)).isoformat(),
+                "duration_hours": "2",
+                "price": "0",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Choose today or a future date.")
+        self.assertFalse(PoultryTraining.objects.filter(name="Past poultry course").exists())
+
+    def test_guest_must_sign_in_to_enroll(self):
+        response = self.client.get(
+            reverse(
+                "poultrys:poultry_training_enroll",
+                kwargs={"slug": self.course.slug},
+            )
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("login", response.url)
+
+    def test_farmer_can_enroll_and_trainer_can_see_registrant(self):
+        self.client.force_login(self.farmer)
+
+        response = self.enroll()
+
+        self.assertRedirects(
+            response,
+            reverse("poultrys:poultry_training_detail", kwargs={"slug": self.course.slug}),
+        )
+        enrollment = TrainingEnrollment.objects.get()
+        self.assertEqual(enrollment.training, self.course)
+        self.assertEqual(enrollment.trainee, self.farmer)
+        self.assertEqual(enrollment.program, self.course.program)
+
+        trainee_dashboard = self.client.get(
+            reverse("poultrys:poultry_training_dashboard")
+        )
+        self.assertContains(trainee_dashboard, self.course.name)
+
+        self.client.force_login(self.trainer)
+        dashboard_response = self.client.get(
+            reverse("poultrys:poultry_training_dashboard")
+        )
+        self.assertContains(dashboard_response, self.course.name)
+        self.assertContains(dashboard_response, self.farmer.username)
+        self.assertContains(dashboard_response, self.farmer.phone_number)
+
+    def test_farmer_cannot_enroll_twice_or_in_own_course(self):
+        self.client.force_login(self.farmer)
+        self.enroll()
+
+        duplicate_response = self.enroll()
+
+        self.assertEqual(duplicate_response.status_code, 200)
+        self.assertContains(duplicate_response, "already registered")
+        self.assertEqual(TrainingEnrollment.objects.count(), 1)
+
+        self.client.force_login(self.trainer)
+        own_course_response = self.enroll()
+        self.assertRedirects(
+            own_course_response,
+            reverse("poultrys:poultry_training_detail", kwargs={"slug": self.course.slug}),
+        )
+        self.assertEqual(TrainingEnrollment.objects.count(), 1)
+
+    def test_past_courses_are_not_listed_or_open_for_registration(self):
+        past_course = self.create_course(
+            name="Earlier poultry course",
+            slug="earlier-poultry-course",
+            training_date=timezone.localdate() - timedelta(days=1),
+        )
+        response = self.client.get(reverse("poultrys:poultry_trainings"))
+        self.assertNotContains(response, past_course.name)
+
+        self.client.force_login(self.farmer)
+        response = self.client.get(
+            reverse(
+                "poultrys:poultry_training_enroll",
+                kwargs={"slug": past_course.slug},
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "poultrys:poultry_training_detail",
+                kwargs={"slug": past_course.slug},
+            ),
+        )
+        self.assertFalse(TrainingEnrollment.objects.filter(training=past_course).exists())
+
+    def test_trainee_dashboard_only_shows_the_current_users_enrollments(self):
+        other_farmer = get_user_model().objects.create_user(
+            username="another-trainee",
+            phone_number="+251911111142",
+            password="7391",
+        )
+        TrainingEnrollment.objects.create(
+            name=other_farmer.username,
+            email="another@example.com",
+            phone=other_farmer.phone_number,
+            program=self.course.program,
+            training=self.course,
+            trainee=other_farmer,
+        )
+        self.client.force_login(self.farmer)
+
+        response = self.client.get(reverse("poultrys:poultry_trainees"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, other_farmer.username)
 
 
 class PoultryAccountRelationshipTests(TestCase):

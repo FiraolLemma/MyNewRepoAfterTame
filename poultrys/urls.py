@@ -54,5 +54,21 @@ urlpatterns = [
     ),
     path("book-consultation/", views.book_consultation, name="book_consultation"),
     path("trainings/", views.poultry_trainings, name="poultry_trainings"),
+    path("trainings/create/", views.poultry_training_create, name="poultry_training_create"),
+    path(
+        "trainings/mine/",
+        views.poultry_training_dashboard,
+        name="poultry_training_dashboard",
+    ),
+    path(
+        "trainings/<slug:slug>/enroll/",
+        views.poultry_training_enroll,
+        name="poultry_training_enroll",
+    ),
+    path(
+        "trainings/<slug:slug>/",
+        views.poultry_training_detail,
+        name="poultry_training_detail",
+    ),
     path("trainees/", views.poultry_trainees, name="poultry_trainees"),
 ]

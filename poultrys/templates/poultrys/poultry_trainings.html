@@ -3,7 +3,7 @@
 {% load i18n %}
 
 {% block title %}
-    {% trans "Poultry Training Programs | Ethiopian Sheger Market place" %}
+    {% trans "Poultry Training Programs | Poultry training place" %}
 {% endblock %}
 
 {% block css %}
@@ -11,87 +11,123 @@
 {% endblock %}
  
 {% block content %}
-<section class="training-container fade-in">
+<main class="poultry-training">
+    {% include "poultrys/poultry_training_messages.html" %}
+    <header class="poultry-training-hero">
+        <div class="poultry-training-hero__copy">
+            <span class="poultry-training-eyebrow"><i class="fas fa-graduation-cap" aria-hidden="true"></i> {% trans "Practical poultry training" %}</span>
+            <h1>{% trans "Learn, improve and grow" %}</h1>
+            <p>{% trans "Build your poultry farming skills with practical courses led by experienced trainers." %}</p>
+            <div class="poultry-training-hero__actions">
+                <a class="poultry-training-button poultry-training-button--primary" href="#poultry-courses">
+                    <i class="fas fa-circle-play" aria-hidden="true"></i> {% trans "Browse trainings" %}
+                </a>
+                <a class="poultry-training-button poultry-training-button--light" href="#poultry-courses">
+                    <i class="fas fa-calendar-days" aria-hidden="true"></i> {% trans "Upcoming courses" %}
+                </a>
+                {% if request.user.is_authenticated %}
+                <a class="poultry-training-button poultry-training-button--light" href="{% url 'poultrys:poultry_training_dashboard' %}">
+                    <i class="fas fa-user" aria-hidden="true"></i> {% trans "My trainings" %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
 
-    <a href="{% url 'poultrys:index' %}" class="back-to-home">
-            <i class="fas fa-arrow-left"></i> {% trans "Back" %}
+    <section class="poultry-training-programs" aria-label="{% trans 'Poultry training programs' %}">
+        {% for value, label in programs %}
+        <a class="poultry-training-program" href="{% url 'poultrys:poultry_trainings' %}?program={{ value }}">
+            <span class="poultry-training-program__icon" aria-hidden="true">
+                {% if value == "meat_chickens" %}<i class="fas fa-drumstick-bite"></i>
+                {% elif value == "layer_chickens" %}<i class="fas fa-egg"></i>
+                {% else %}<i class="fas fa-feather"></i>{% endif %}
+            </span>
+            <span class="poultry-training-program__text">
+                <strong>{{ label }}</strong>
+                <small>{% trans "Explore courses" %}</small>
+            </span>
+            <i class="fas fa-arrow-right poultry-training-program__arrow" aria-hidden="true"></i>
         </a>
-        
-    <div class="training-header">
-        <h1 class="training-title">Poultry Training Programs</h1>
-        <p class="training-subtitle">Enhance your poultry farming skills with our specialized training programs on Meat Chickens, Layer Chickens, and Dual Purpose Chickens. Whether you're a beginner or an experienced farmer, our courses are designed to provide you with the knowledge and techniques needed for successful poultry management.</p>
-    </div>
-    <div class="training-section fade-in">
-        <h2 class="section-title">Our Training Programs</h2>
-        <div class="image-grid">
-            <div class="image-card">
-                <img src="{% static 'poultrys/images/image.jpg' %}" alt="Meat Chickens">
-                <div class="image-overlay">Meat Chickens Training</div>
-            </div>
-            <div class="image-card">
-                <img src="{% static 'poultrys/images/image.jpg' %}" alt="Layer Chickens">
-                <div class="image-overlay">Layer Chickens Training</div>
-            </div>
-            <div class="image-card">
-                <img src="{% static 'poultrys/images/image.jpg' %}" alt="Dual Purpose Chickens">
-                <div class="image-overlay">Dual Purpose Chickens Training</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="training-section fade-in">
-    <div class="training-header">
-        <h2 class="section-title">Enroll in Our Training Programs</h2>
-        <p class="training-subtitle">Fill out the form below to register for our upcoming poultry training programs.</p>
-    </div>
-
-    <div class="enroll-form">
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-block">Enroll Now</button>
-    </form>
-</div>
-
-{% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-            <p class="alert alert-success">{{ message }}</p>
         {% endfor %}
-    </div>
-{% endif %}
+    </section>
 
+    <section class="poultry-training-content" id="poultry-courses" aria-labelledby="poultry-courses-title">
+        <div class="poultry-training-toolbar">
+            <div class="poultry-training-heading">
+                <span class="poultry-training-heading__icon"><i class="fas fa-book-open" aria-hidden="true"></i></span>
+                <div>
+                    <h2 id="poultry-courses-title">{% trans "Upcoming poultry courses" %}</h2>
+                    <p>{{ training_count }} {% trans "courses available" %}</p>
+                </div>
+            </div>
+            <form class="poultry-training-filters" method="get" action="{% url 'poultrys:poultry_trainings' %}">
+                <label class="poultry-training-search">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <span class="visually-hidden">{% trans "Search trainings" %}</span>
+                    <input type="search" name="q" value="{{ search_query }}" placeholder="{% trans 'Course, program, or location' %}">
+                </label>
+                <label class="poultry-training-select">
+                    <span class="visually-hidden">{% trans "Filter by program" %}</span>
+                    <select name="program">
+                        <option value="">{% trans "All programs" %}</option>
+                        {% for value, label in programs %}
+                        <option value="{{ value }}" {% if selected_program == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <button class="poultry-training-button poultry-training-button--filter" type="submit">{% trans "Search" %}</button>
+            </form>
+        </div>
 
-</section>
+        {% if trainings %}
+        <div class="poultry-training-grid">
+            {% for course in trainings %}
+            <article class="poultry-training-card">
+                <a class="poultry-training-card__image" href="{% url 'poultrys:poultry_training_detail' slug=course.slug %}">
+                    <img src="{% static 'poultrys/images/training.jpg' %}" alt="">
+                    <span class="poultry-training-card__format">{{ course.get_training_format_display }}</span>
+                </a>
+                <div class="poultry-training-card__body">
+                    <p class="poultry-training-card__program">{{ course.get_program_display }}</p>
+                    <h3><a href="{% url 'poultrys:poultry_training_detail' slug=course.slug %}">{{ course.name }}</a></h3>
+                    <p class="poultry-training-card__description">{{ course.description|truncatewords:20 }}</p>
+                    <div class="poultry-training-card__meta">
+                        <span><i class="fas fa-calendar-days" aria-hidden="true"></i> {{ course.training_date|date:"M d, Y" }}</span>
+                        <span><i class="fas fa-clock" aria-hidden="true"></i> {{ course.duration_hours }} {% trans "hours" %}</span>
+                    </div>
+                    <div class="poultry-training-card__footer">
+                        <span class="poultry-training-card__price">{{ course.display_price }}</span>
+                        <a class="poultry-training-button poultry-training-button--enroll" href="{% url 'poultrys:poultry_training_detail' slug=course.slug %}">
+                            {% trans "View course" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="poultry-training-empty">
+            <span><i class="fas fa-book-open" aria-hidden="true"></i></span>
+            <h3>{% trans "No upcoming courses found" %}</h3>
+            <p>{% trans "Try another search or program, or share your experience by publishing a course." %}</p>
+            <a class="poultry-training-button poultry-training-button--enroll" href="{% url 'poultrys:poultry_training_create' %}">
+                <i class="fas fa-plus" aria-hidden="true"></i> {% trans "Provide a training" %}
+            </a>
+        </div>
+        {% endif %}
 
-<section class="training-section fade-in">
-    <div class="training-header">
-        <h2 class="section-title">Payment Information</h2>
-        <p class="training-subtitle">Please use the following information to complete your payment.</p>
-    </div>
-    <div class="payment-info">
-        <div class="payment-method">
-            <h3>CBE Bank Account</h3>
-            <p>Account Name: Poultry Training</p>
-            <p>Account Number: 1234567890</p>
+        <div class="poultry-training-provider-callout">
+            <div>
+                <span class="poultry-training-eyebrow poultry-training-eyebrow--green">{% trans "For poultry professionals" %}</span>
+                <h2>{% trans "Share what you know. Help farms thrive." %}</h2>
+                <p>{% trans "Publish a course and connect with farmers ready to learn." %}</p>
+            </div>
+            <a class="poultry-training-button poultry-training-button--enroll" href="{% url 'poultrys:poultry_training_create' %}">
+                <i class="fas fa-plus" aria-hidden="true"></i> {% trans "Provide a training" %}
+            </a>
         </div>
-        <div class="payment-method">
-            <h3>Telebirr Information</h3>
-            <p>Phone Number: 0987654321</p>
-        </div>
-    </div>
-    <div class="image-grid">
-        <div class="image-card">
-            <img src="{% static 'poultrys/images/image.jpg' %}" alt="CBE Bank">
-            <div class="image-overlay">CBE Bank</div>
-        </div>
-        <div class="image-card">
-            <img src="{% static 'poultrys/images/image.jpg' %}" alt="Telebirr">
-            <div class="image-overlay">Telebirr Payment</div>
-        </div>
-    </div>
-</section>
+    </section>
+</main>
 {% endblock %}
 
 {% block js %}

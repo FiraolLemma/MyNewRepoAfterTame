@@ -1,286 +1,229 @@
-/* poultrys/static/poultrys/css/poultry_trainings.css */
-
-/* Variables */
-:root {
-    --primary-color: #4a8c2c;
-    --primary-dark: #3a6e22;
-    --secondary-color: #f8c537;
-    --accent-color: #e67e22;
-    --text-dark: #2c3e50;
-    --text-light: #7f8c8d;
-    --light-bg: #f9f9f9;
-    --white: #ffffff;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --transition: all 0.3s ease;
+.poultry-training {
+    --poultry-training-green: #087c49;
+    --poultry-training-dark: #075b38;
+    --poultry-training-soft: #eaf5ee;
+    --poultry-training-ink: #173a31;
+    --poultry-training-muted: #60736c;
+    --poultry-training-border: #dce6e1;
+    color: var(--poultry-training-ink);
 }
 
-/* General Styles */
-.training-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-}
+.poultry-training-messages { display: grid; gap: .45rem; margin-bottom: .8rem; }
+.poultry-training-message { margin: 0; border-radius: .55rem; padding: .65rem .8rem; color: #155d39; background: #e5f4e9; font-size: .82rem; }
+.poultry-training-message--error { color: #872e2b; background: #fae9e7; }
+.poultry-training-message--warning { color: #71571a; background: #fff4d8; }
 
-.training-header {
-    text-align: center;
-    margin-bottom: 3rem;
-}
-
-.training-title {
-    font-size: 2.35rem;
-    color: var(--primary-color);
-    font-weight: 600;
-}
-
-.training-subtitle {
-    font-size: 1.1rem;
-    color: var(--text-light);
-    max-width: 800px;
-    margin: 0 auto;
-    line-height: 1.2;
-}
-
-/* Training Sections */
-.training-section {
-    margin-bottom: 1.4rem;
-    padding: 0.2rem;
-    background: var(--white);
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-}
-
-.training-section:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.section-title {
-    font-size: 2rem;
-    color: var(--text-dark);
-    margin-bottom: 1.5rem;
-    text-align: center;
-    position: relative;
-    padding-bottom: 0.5rem;
-}
-
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 3px;
-    background: var(--primary-color);
-}
-
-/* Image Grid */
-.image-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin: 1.2rem 0;
-}
-
-.image-card {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-}
-
-.image-card:hover {
-    transform: scale(1.03);
-}
-
-.image-card img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    display: block;
-    transition: var(--transition);
-}
-
-.image-card:hover img {
-    transform: scale(1.1);
-}
-
-.image-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-    padding: 0.5rem;
-    color: var(--white);
-    opacity: 0;
-    transition: var(--transition);
-}
-
-.image-card:hover .image-overlay {
-    opacity: 1;
-}
-
-/* Form Styles */
-.enroll-form {
-    background: var(--light-bg);
-    padding: 2rem;
-    border-radius: 10px;
-    margin-top: 2rem;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--text-dark);
-    font-weight: 500;
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
-    transition: var(--transition);
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(74, 140, 44, 0.1);
-}
-
-.btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: var(--primary-color);
-    color: var(--white);
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    text-align: center;
-}
-
-.btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
-.btn-block {
-    display: block;
-    width: 100%;
-}
-
-/* Payment Info */
-.payment-info {
-    background: var(--light-bg);
-    padding: 2rem;
-    border-radius: 10px;
-    margin-top: 2rem;
-}
-
-.payment-method {
-    margin-bottom: 1.5rem;
-}
-
-.payment-method h3 {
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
-
-.payment-method p {
-    margin: 0.25rem 0;
-    color: var(--text-dark);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .training-title {
-        font-size: 2rem;
-    }
-    
-    .section-title {
-        font-size: 1.5rem;
-    }
-    
-    .image-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .training-section {
-        padding: 1.5rem;
-    }
-}
-
-/* Animation Classes */
-.fade-in {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.fade-in.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.back-to-home {
-    display: inline-flex;
+.poultry-training-hero {
+    display: flex;
+    min-height: 225px;
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    background-color: #f8f9fa;
-    color: #333;
-    text-decoration: none;
-    border-radius: 10px;
-    border: 1px solid #cfcfcf;
-    transition: all 0.3s ease;
+    padding: 2rem clamp(1.25rem, 5vw, 4rem);
+    color: #fff;
+    background:
+        linear-gradient(90deg, rgba(5, 65, 38, .94), rgba(7, 107, 62, .78) 55%, rgba(9, 75, 47, .2)),
+        url("../images/training.jpg") center 48% / cover,
+        var(--poultry-training-green);
 }
 
-.back-to-home:hover {
-    background-color: #f8bc6d;
+.poultry-training-hero__copy { max-width: 700px; }
+.poultry-training-eyebrow { display: inline-flex; align-items: center; gap: .45rem; margin-bottom: .5rem; color: #d9f5df; font-size: .75rem; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; }
+.poultry-training-eyebrow--green { color: var(--poultry-training-green); }
+.poultry-training-hero h1 { margin: 0 0 .45rem; color: #fff; font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.12; }
+.poultry-training-hero p { max-width: 550px; margin: 0; color: rgba(255, 255, 255, .94); font-size: 1rem; line-height: 1.6; }
+.poultry-training-hero__actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.1rem; }
+.poultry-training-button {
+    display: inline-flex;
+    min-height: 2.45rem;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    border: 1px solid transparent;
+    border-radius: .65rem;
+    padding: .55rem .9rem;
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 750;
+    line-height: 1.2;
     text-decoration: none;
-    border: 1px solid #87dfeb;
-    color: #007bff;
+    transition: background-color .18s ease, transform .18s ease;
+}
+.poultry-training-button:hover { transform: translateY(-1px); }
+.poultry-training-button--primary { color: #fff; background: #10a65c; }
+.poultry-training-button--primary:hover { color: #fff; background: #078b4b; }
+.poultry-training-button--light { border-color: rgba(255, 255, 255, .8); color: #fff; background: rgba(255, 255, 255, .08); }
+.poultry-training-button--light:hover { color: var(--poultry-training-dark); background: #fff; }
+.poultry-training-button--enroll { color: #fff; background: var(--poultry-training-dark); }
+.poultry-training-button--enroll:hover { color: #fff; background: var(--poultry-training-green); }
+.poultry-training-button--filter,
+.poultry-training-button--muted { border-color: var(--poultry-training-border); color: var(--poultry-training-ink); background: #fff; }
+.poultry-training-button--filter:hover,
+.poultry-training-button--muted:hover { color: var(--poultry-training-dark); background: var(--poultry-training-soft); }
+
+.poultry-training-programs {
+    display: grid;
+    width: min(100% - 2rem, 1320px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .7rem;
+    margin: 1.4rem auto 0;
+}
+.poultry-training-program { display: flex; min-width: 0; align-items: center; gap: .7rem; border: 1px solid var(--poultry-training-border); border-radius: .75rem; padding: .7rem; color: var(--poultry-training-ink); background: #fff; text-decoration: none; transition: border-color .18s ease, box-shadow .18s ease; }
+.poultry-training-program:hover { border-color: #9ccbb0; box-shadow: 0 5px 16px rgba(14, 74, 46, .08); color: var(--poultry-training-dark); }
+.poultry-training-program__icon { display: grid; width: 2.6rem; min-width: 2.6rem; aspect-ratio: 1; place-items: center; border-radius: .65rem; color: var(--poultry-training-green); background: var(--poultry-training-soft); }
+.poultry-training-program__text { display: grid; min-width: 0; gap: .16rem; }
+.poultry-training-program__text strong { font-size: .78rem; line-height: 1.3; }
+.poultry-training-program__text small { color: var(--poultry-training-muted); font-size: .7rem; }
+.poultry-training-program__arrow { margin-left: auto; color: var(--poultry-training-green); font-size: .85rem; }
+
+.poultry-training-content { width: min(100% - 2rem, 1320px); margin: 1.6rem auto 2rem; }
+.poultry-training-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .9rem; }
+.poultry-training-heading { display: flex; min-width: max-content; align-items: center; gap: .65rem; }
+.poultry-training-heading__icon { display: grid; width: 2.45rem; aspect-ratio: 1; place-items: center; border-radius: .7rem; color: var(--poultry-training-green); background: var(--poultry-training-soft); }
+.poultry-training-heading h2 { margin: 0; font-size: 1.05rem; font-weight: 800; }
+.poultry-training-heading p { margin: .1rem 0 0; color: var(--poultry-training-muted); font-size: .75rem; }
+.poultry-training-filters { display: flex; min-width: 0; align-items: center; gap: .45rem; }
+.poultry-training-search,
+.poultry-training-select select { display: flex; min-height: 2.45rem; align-items: center; gap: .45rem; border: 1px solid var(--poultry-training-border); border-radius: .6rem; color: #728078; background: #fff; }
+.poultry-training-search { width: min(28vw, 290px); padding: 0 .65rem; }
+.poultry-training-search input { width: 100%; min-width: 0; border: 0; outline: 0; color: var(--poultry-training-ink); background: transparent; font: inherit; font-size: .78rem; }
+.poultry-training-select select { max-width: 215px; padding: .4rem 1.8rem .4rem .65rem; color: var(--poultry-training-ink); font: inherit; font-size: .78rem; }
+.poultry-training-search:focus-within,
+.poultry-training-select select:focus-visible { border-color: var(--poultry-training-green); outline: 2px solid rgba(8, 124, 73, .14); outline-offset: 1px; }
+
+.poultry-training-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem; }
+.poultry-training-card { overflow: hidden; border: 1px solid var(--poultry-training-border); border-radius: .8rem; background: #fff; box-shadow: 0 3px 12px rgba(25, 55, 42, .04); }
+.poultry-training-card__image { position: relative; display: block; height: 155px; overflow: hidden; background: var(--poultry-training-soft); }
+.poultry-training-card__image img { width: 100%; height: 100%; object-fit: cover; transition: transform .25s ease; }
+.poultry-training-card:hover .poultry-training-card__image img { transform: scale(1.035); }
+.poultry-training-card__format { position: absolute; right: .65rem; bottom: .6rem; border-radius: 2rem; padding: .3rem .55rem; color: var(--poultry-training-dark); background: #fff; font-size: .68rem; font-weight: 750; }
+.poultry-training-card__body { padding: .8rem; }
+.poultry-training-card__program { margin: 0 0 .25rem; color: var(--poultry-training-green); font-size: .68rem; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+.poultry-training-card h3 { margin: 0; font-size: .98rem; font-weight: 800; line-height: 1.35; }
+.poultry-training-card h3 a,
+.poultry-training-dashboard-card h3 a { color: var(--poultry-training-ink); text-decoration: none; }
+.poultry-training-card h3 a:hover,
+.poultry-training-dashboard-card h3 a:hover { color: var(--poultry-training-green); }
+.poultry-training-card__description { min-height: 2.6em; margin: .35rem 0 .7rem; color: var(--poultry-training-muted); font-size: .78rem; line-height: 1.5; }
+.poultry-training-card__meta { display: flex; flex-wrap: wrap; gap: .5rem .85rem; color: #52685e; font-size: .72rem; }
+.poultry-training-card__meta i { margin-right: .25rem; color: var(--poultry-training-green); }
+.poultry-training-card__footer { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .75rem; border-top: 1px solid #edf1ee; padding-top: .65rem; }
+.poultry-training-card__price { color: var(--poultry-training-ink); font-size: .85rem; font-weight: 800; }
+.poultry-training-card__footer .poultry-training-button { min-height: 2.1rem; padding: .45rem .65rem; font-size: .72rem; }
+.poultry-training-empty { display: grid; justify-items: center; border: 1px dashed #bfd5c8; border-radius: .8rem; padding: 2rem 1rem; text-align: center; }
+.poultry-training-empty > span { display: grid; width: 2.8rem; aspect-ratio: 1; place-items: center; border-radius: 50%; color: var(--poultry-training-green); background: var(--poultry-training-soft); }
+.poultry-training-empty h3 { margin: .7rem 0 .25rem; font-size: 1rem; }
+.poultry-training-empty p { max-width: 500px; margin: 0 0 .8rem; color: var(--poultry-training-muted); font-size: .82rem; }
+.poultry-training-empty--compact { padding: 1.3rem; }
+.poultry-training-provider-callout { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.5rem; border-radius: .85rem; padding: 1.15rem 1.3rem; background: #f0f7f2; }
+.poultry-training-provider-callout h2 { margin: 0 0 .2rem; font-size: 1.05rem; }
+.poultry-training-provider-callout p { margin: 0; color: var(--poultry-training-muted); font-size: .8rem; }
+
+.poultry-training-form-page,
+.poultry-training-detail-page,
+.poultry-training-dashboard { width: min(100% - 2rem, 1180px); margin: 1.3rem auto 2rem; }
+.poultry-training-back-link { display: inline-flex; align-items: center; gap: .45rem; margin-bottom: 1rem; color: var(--poultry-training-dark); font-size: .82rem; font-weight: 700; text-decoration: none; }
+.poultry-training-form-layout,
+.poultry-training-enroll-layout { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(250px, .75fr); align-items: start; gap: 1rem; }
+.poultry-training-form-panel,
+.poultry-training-form-aside,
+.poultry-training-enroll-summary,
+.poultry-training-detail,
+.poultry-training-dashboard-card { border: 1px solid var(--poultry-training-border); border-radius: .85rem; background: #fff; box-shadow: 0 4px 18px rgba(25, 55, 42, .045); }
+.poultry-training-form-panel { padding: clamp(1rem, 3vw, 1.8rem); }
+.poultry-training-form-panel h1,
+.poultry-training-dashboard__heading h1 { margin: 0; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; }
+.poultry-training-form-intro { margin: .4rem 0 1.2rem; color: var(--poultry-training-muted); font-size: .88rem; line-height: 1.55; }
+.poultry-training-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; }
+.poultry-training-form__field { display: grid; gap: .35rem; min-width: 0; }
+.poultry-training-form__field--wide { grid-column: 1 / -1; }
+.poultry-training-form__field label { color: var(--poultry-training-ink); font-size: .78rem; font-weight: 750; }
+.poultry-training-form__field label span { color: #be3b32; }
+.poultry-training-form__control { width: 100%; min-height: 2.6rem; border: 1px solid #d5e0d9; border-radius: .55rem; padding: .6rem .7rem; color: var(--poultry-training-ink); background: #fff; font: inherit; font-size: .84rem; }
+textarea.poultry-training-form__control { min-height: 7rem; resize: vertical; }
+.poultry-training-form__control:focus { border-color: var(--poultry-training-green); outline: 2px solid rgba(8, 124, 73, .14); }
+.poultry-training-form__help { margin: 0; color: var(--poultry-training-muted); font-size: .72rem; }
+.poultry-training-form__field ul.errorlist,
+.poultry-training-form ul.errorlist { margin: 0; padding-left: 1.1rem; color: #a52e27; font-size: .76rem; }
+.poultry-training-form__notice,
+.poultry-training-detail__notice { border-radius: .6rem; padding: .7rem .8rem; color: #435d4f; background: #f0f7f2; font-size: .78rem; line-height: 1.5; }
+.poultry-training-form__notice i { margin-right: .3rem; color: var(--poultry-training-green); }
+.poultry-training-form__actions { display: flex; justify-content: flex-end; gap: .55rem; margin-top: 1rem; }
+.poultry-training-form-aside,
+.poultry-training-enroll-summary { padding: 1.25rem; }
+.poultry-training-form-aside__icon { display: grid; width: 2.7rem; aspect-ratio: 1; place-items: center; border-radius: .75rem; color: var(--poultry-training-green); background: var(--poultry-training-soft); font-size: 1.15rem; }
+.poultry-training-form-aside h2,
+.poultry-training-enroll-summary h2 { margin: .7rem 0 .35rem; font-size: 1.05rem; }
+.poultry-training-form-aside p,
+.poultry-training-enroll-summary p { color: var(--poultry-training-muted); font-size: .82rem; line-height: 1.55; }
+.poultry-training-form-aside ul { display: grid; gap: .65rem; margin: 1rem 0 0; padding: 0; list-style: none; font-size: .78rem; }
+.poultry-training-form-aside li i { margin-right: .4rem; color: var(--poultry-training-green); }
+.poultry-training-enroll-summary dl,
+.poultry-training-detail__aside dl { display: grid; gap: .65rem; margin: 1rem 0; }
+.poultry-training-enroll-summary dl div,
+.poultry-training-detail__aside dl div { display: flex; justify-content: space-between; gap: .8rem; border-bottom: 1px solid #edf1ee; padding-bottom: .55rem; font-size: .78rem; }
+.poultry-training-enroll-summary dt,
+.poultry-training-detail__aside dt { color: var(--poultry-training-muted); }
+.poultry-training-enroll-summary dd,
+.poultry-training-detail__aside dd { margin: 0; color: var(--poultry-training-ink); font-weight: 700; text-align: right; }
+.poultry-training-button--full { width: 100%; }
+.poultry-training-detail { overflow: hidden; }
+.poultry-training-detail__banner { padding: clamp(1.2rem, 4vw, 2.5rem); color: #fff; background: linear-gradient(90deg, rgba(5, 65, 38, .95), rgba(7, 107, 62, .82)), url("../images/training.jpg") center / cover, var(--poultry-training-green); }
+.poultry-training-detail__banner h1 { margin: 0 0 .35rem; color: #fff; font-size: clamp(1.7rem, 4vw, 2.5rem); }
+.poultry-training-detail__banner p { margin: 0; color: rgba(255, 255, 255, .9); font-size: .88rem; }
+.poultry-training-detail__layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(250px, .8fr); gap: 1.2rem; padding: clamp(1rem, 3vw, 1.6rem); }
+.poultry-training-detail__main h2,
+.poultry-training-detail__aside h2,
+.poultry-training-dashboard-section h2 { margin: 0 0 .75rem; font-size: 1.1rem; }
+.poultry-training-detail__description,
+.poultry-training-detail__main > p { color: #465f53; font-size: .87rem; line-height: 1.7; }
+.poultry-training-detail__description p:first-child { margin-top: 0; }
+.poultry-training-detail__aside { align-self: start; border: 1px solid var(--poultry-training-border); border-radius: .7rem; padding: 1rem; }
+.poultry-training-detail__notice { margin: .5rem 0; }
+.poultry-training-detail__notice--success { color: #155d39; }
+.poultry-training-detail__message { display: block; margin-top: .65rem; color: var(--poultry-training-dark); font-size: .8rem; font-weight: 700; text-align: center; text-decoration: none; }
+
+.poultry-training-dashboard__heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.poultry-training-dashboard__heading p { margin: .35rem 0 0; color: var(--poultry-training-muted); font-size: .85rem; }
+.poultry-training-dashboard-section { margin-top: 1.4rem; }
+.poultry-training-dashboard-list { display: grid; gap: .8rem; }
+.poultry-training-dashboard-card { min-width: 0; padding: 1rem; }
+.poultry-training-dashboard-card__heading { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+.poultry-training-dashboard-card h3 { margin: 0; font-size: .95rem; }
+.poultry-training-dashboard-card__meta,
+.poultry-training-dashboard-card__empty,
+.poultry-training-dashboard-card--enrollment > p:not(.poultry-training-card__program) { margin: .35rem 0 0; color: var(--poultry-training-muted); font-size: .78rem; }
+.poultry-training-registrants { margin-top: .9rem; border-top: 1px solid #edf1ee; padding-top: .7rem; }
+.poultry-training-registrants h4 { margin: 0 0 .4rem; font-size: .78rem; }
+.poultry-training-registrant { display: grid; grid-template-columns: 1.1fr 1fr 1.5fr auto; align-items: center; gap: .6rem; border-top: 1px solid #f0f3f1; padding: .5rem 0; color: #52685e; font-size: .75rem; overflow-wrap: anywhere; }
+.poultry-training-registrant a { color: var(--poultry-training-dark); text-decoration: none; }
+.poultry-training-registrant__name { color: var(--poultry-training-ink); font-weight: 700; }
+.poultry-training-status { display: inline-flex; width: fit-content; border-radius: 2rem; padding: .24rem .55rem; color: #71571a; background: #fff4d8; font-size: .68rem; font-weight: 750; }
+.poultry-training-status--confirmed { color: #155d39; background: #e5f4e9; }
+.poultry-training-status--cancelled { color: #872e2b; background: #fae9e7; }
+.poultry-training-grid--dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+@media (max-width: 900px) {
+    .poultry-training-programs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .poultry-training-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .poultry-training-toolbar { align-items: stretch; flex-direction: column; }
+    .poultry-training-search { width: min(42vw, 320px); }
+}
+
+@media (max-width: 650px) {
+    .poultry-training-hero { min-height: 250px; }
+    .poultry-training-programs,
+    .poultry-training-grid,
+    .poultry-training-grid--dashboard,
+    .poultry-training-form-layout,
+    .poultry-training-enroll-layout,
+    .poultry-training-detail__layout { grid-template-columns: 1fr; }
+    .poultry-training-filters { display: grid; grid-template-columns: 1fr auto; }
+    .poultry-training-search { width: 100%; grid-column: 1 / -1; }
+    .poultry-training-select,
+    .poultry-training-select select { width: 100%; max-width: none; }
+    .poultry-training-form__grid { grid-template-columns: 1fr; }
+    .poultry-training-form__field--wide { grid-column: auto; }
+    .poultry-training-provider-callout,
+    .poultry-training-dashboard__heading { align-items: flex-start; flex-direction: column; }
+    .poultry-training-dashboard-card__heading { align-items: flex-start; flex-direction: column; }
+    .poultry-training-registrant { grid-template-columns: 1fr 1fr; }
 }

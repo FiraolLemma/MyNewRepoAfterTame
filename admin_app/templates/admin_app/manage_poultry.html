@@ -143,6 +143,9 @@
             <th>Email</th>
             <th>Phone</th>
             <th>Program</th>
+            <th>Training Course</th>
+            <th>Provider</th>
+            <th>Status</th>
             <th>Enrolled At</th>
         </tr>
     </thead>
@@ -153,10 +156,13 @@
             <td>{{ training.email }}</td>
             <td>{{ training.phone }}</td>
             <td>{{ training.get_program_display }}</td>
+            <td>{{ training.training.name|default:"N/A" }}</td>
+            <td>{{ training.training.provider.username|default:"N/A" }}</td>
+            <td>{{ training.get_status_display }}</td>
             <td>{{ training.created_at }}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="5">No Training Enrollments found.</td></tr>
+        <tr><td colspan="8">No Training Enrollments found.</td></tr>
         {% endfor %}
     </tbody>
 </table>

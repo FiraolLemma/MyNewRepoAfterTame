@@ -1,51 +1,94 @@
-{% extends 'base/base.html' %}
+{% extends "base/base.html" %}
 {% load static %}
 {% load i18n %}
 
-{% block title %}
-    {% trans "Poultry Training Trainees | Ethiopian Sheger Market place" %}
-{% endblock %}
+{% block title %}{% trans "My Poultry Trainings | Sheger City" %}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'poultrys/css/poultry_trainings.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="training-container">
-    <div class="training-header">
-        <h1 class="training-title">Enrolled Trainees</h1>
-        <p class="training-subtitle">Here is the list of people who have enrolled in poultry training programs.</p>
+<main class="poultry-training poultry-training-dashboard">
+    {% include "poultrys/poultry_training_messages.html" %}
+    <div class="poultry-training-dashboard__heading">
+        <div>
+            <span class="poultry-training-eyebrow poultry-training-eyebrow--green"><i class="fas fa-user" aria-hidden="true"></i> {% trans "Your learning and teaching" %}</span>
+            <h1>{% trans "My poultry trainings" %}</h1>
+            <p>{% trans "Manage your published courses and keep track of the trainings you joined." %}</p>
+        </div>
+        <a class="poultry-training-button poultry-training-button--enroll" href="{% url 'poultrys:poultry_training_create' %}">
+            <i class="fas fa-plus" aria-hidden="true"></i> {% trans "Publish a course" %}
+        </a>
     </div>
 
-    <div class="trainee-list">
-        {% if trainees %}
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Program</th>
-                        <th>Enrollment Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for trainee in trainees %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ trainee.name }}</td>
-                        <td>{{ trainee.email }}</td>
-                        <td>{{ trainee.phone }}</td>
-                        <td>{{ trainee.get_program_display }}</td>
-                        <td>{{ trainee.created_at|date:"M d, Y H:i" }}</td>
-                    </tr>
+    <section class="poultry-training-dashboard-section" aria-labelledby="provided-poultry-courses-title">
+        <h2 id="provided-poultry-courses-title">{% trans "Courses I provide" %}</h2>
+        {% if courses %}
+        <div class="poultry-training-dashboard-list">
+            {% for course in courses %}
+            <article class="poultry-training-dashboard-card">
+                <div class="poultry-training-dashboard-card__heading">
+                    <div>
+                        <p class="poultry-training-card__program">{{ course.get_program_display }}</p>
+                        <h3><a href="{% url 'poultrys:poultry_training_detail' slug=course.slug %}">{{ course.name }}</a></h3>
+                        <p class="poultry-training-dashboard-card__meta">
+                            {{ course.training_date|date:"M d, Y" }} · {{ course.enrollments.count }} {% trans "registrations" %}
+                        </p>
+                    </div>
+                    <a class="poultry-training-button poultry-training-button--muted" href="{% url 'poultrys:poultry_training_detail' slug=course.slug %}">{% trans "View course" %}</a>
+                </div>
+                {% if course.enrollments.all %}
+                <div class="poultry-training-registrants">
+                    <h4>{% trans "Registered farmers" %}</h4>
+                    {% for enrollment in course.enrollments.all %}
+                    <div class="poultry-training-registrant">
+                        <span class="poultry-training-registrant__name">{{ enrollment.name }}</span>
+                        <span>{{ enrollment.phone }}</span>
+                        <a href="mailto:{{ enrollment.email }}">{{ enrollment.email }}</a>
+                        <span class="poultry-training-status poultry-training-status--{{ enrollment.status }}">{{ enrollment.get_status_display }}</span>
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+                {% else %}
+                <p class="poultry-training-dashboard-card__empty">{% trans "No farmers have registered yet." %}</p>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
         {% else %}
-            <p>No trainees enrolled yet.</p>
+        <div class="poultry-training-empty poultry-training-empty--compact">
+            <h3>{% trans "You have not published a course yet" %}</h3>
+            <p>{% trans "Share your expertise by creating a poultry training course." %}</p>
+            <a class="poultry-training-button poultry-training-button--enroll" href="{% url 'poultrys:poultry_training_create' %}">{% trans "Publish a course" %}</a>
+        </div>
         {% endif %}
-    </div>
-</section>
+    </section>
+
+    <section class="poultry-training-dashboard-section" aria-labelledby="joined-poultry-courses-title">
+        <h2 id="joined-poultry-courses-title">{% trans "Courses I joined" %}</h2>
+        {% if enrollments %}
+        <div class="poultry-training-grid poultry-training-grid--dashboard">
+            {% for enrollment in enrollments %}
+            <article class="poultry-training-dashboard-card poultry-training-dashboard-card--enrollment">
+                {% if enrollment.training %}
+                <p class="poultry-training-card__program">{{ enrollment.training.get_program_display }}</p>
+                <h3><a href="{% url 'poultrys:poultry_training_detail' slug=enrollment.training.slug %}">{{ enrollment.training.name }}</a></h3>
+                <p>{% trans "Trainer:" %} {{ enrollment.training.provider.username }}</p>
+                {% else %}
+                <h3>{% trans "Training course no longer available" %}</h3>
+                {% endif %}
+                <span class="poultry-training-status poultry-training-status--{{ enrollment.status }}">{{ enrollment.get_status_display }}</span>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="poultry-training-empty poultry-training-empty--compact">
+            <h3>{% trans "You have not joined a course yet" %}</h3>
+            <p>{% trans "Browse available poultry trainings and register for one that fits your farm." %}</p>
+            <a class="poultry-training-button poultry-training-button--enroll" href="{% url 'poultrys:poultry_trainings' %}">{% trans "Browse trainings" %}</a>
+        </div>
+        {% endif %}
+    </section>
+</main>
 {% endblock %}

@@ -116,7 +116,11 @@ def manage_poultry(request):
         "egg_sellers": EggSeller.objects.select_related("user", "farm"),
         "chicken_sellers": ChickenSeller.objects.select_related("user", "farm"),
         "consultants": Consultant.objects.all(),
-        "trainings": TrainingEnrollment.objects.all(),
+        "trainings": TrainingEnrollment.objects.select_related(
+            "training",
+            "training__provider",
+            "trainee",
+        ),
     }
     return render(request, "admin_app/manage_poultry.html", context)
 

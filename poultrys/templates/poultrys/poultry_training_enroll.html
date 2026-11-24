@@ -1,0 +1,56 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Enroll in" %} {{ course.name }} | {% trans "Poultry Training" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'poultrys/css/poultry_trainings.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="poultry-training poultry-training-form-page">
+    {% include "poultrys/poultry_training_messages.html" %}
+    <a class="poultry-training-back-link" href="{% url 'poultrys:poultry_training_detail' slug=course.slug %}">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> {% trans "Back to course" %}
+    </a>
+    <div class="poultry-training-enroll-layout">
+        <section class="poultry-training-form-panel" aria-labelledby="poultry-enroll-title">
+            <span class="poultry-training-eyebrow poultry-training-eyebrow--green"><i class="fas fa-user-plus" aria-hidden="true"></i> {% trans "Course registration" %}</span>
+            <h1 id="poultry-enroll-title">{% trans "Enroll in this training" %}</h1>
+            <p class="poultry-training-form-intro">{{ course.name }} · {{ course.get_program_display }}</p>
+            <form method="post" class="poultry-training-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="poultry-training-form__grid">
+                    {% for field in form %}
+                    <div class="poultry-training-form__field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span aria-hidden="true"> *</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<p class="poultry-training-form__help">{{ field.help_text }}</p>{% endif %}
+                        {{ field.errors }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="poultry-training-form__notice"><i class="fas fa-lock" aria-hidden="true"></i> {% trans "Your registration is linked to your account. The trainer will use these contact details to follow up." %}</p>
+                <div class="poultry-training-form__actions">
+                    <a class="poultry-training-button poultry-training-button--muted" href="{% url 'poultrys:poultry_training_detail' slug=course.slug %}">{% trans "Cancel" %}</a>
+                    <button class="poultry-training-button poultry-training-button--enroll" type="submit">
+                        <i class="fas fa-check" aria-hidden="true"></i> {% trans "Confirm enrollment" %}
+                    </button>
+                </div>
+            </form>
+        </section>
+        <aside class="poultry-training-enroll-summary">
+            <h2>{{ course.name }}</h2>
+            <p>{{ course.description|truncatewords:24 }}</p>
+            <dl>
+                <div><dt>{% trans "Date" %}</dt><dd>{{ course.training_date|date:"M d, Y" }}</dd></div>
+                <div><dt>{% trans "Format" %}</dt><dd>{{ course.get_training_format_display }}</dd></div>
+                <div><dt>{% trans "Duration" %}</dt><dd>{{ course.duration_hours }} {% trans "hours" %}</dd></div>
+                <div><dt>{% trans "Fee" %}</dt><dd>{{ course.display_price }}</dd></div>
+            </dl>
+        </aside>
+    </div>
+</main>
+{% endblock %}

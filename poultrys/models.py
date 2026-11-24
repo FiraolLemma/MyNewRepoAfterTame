@@ -393,18 +393,106 @@ class ChickenSeller(models.Model):
         verbose_name_plural = _("Chicken Sellers")
         ordering = ['-created_at']
 
-class TrainingEnrollment(models.Model):
+class PoultryTraining(models.Model):
     PROGRAM_CHOICES = [
-        ('meat_chickens', 'Meat Chickens'),
-        ('layer_chickens', 'Layer Chickens'),
-        ('dual_purpose_chickens', 'Dual Purpose Chickens'),
+        ("meat_chickens", _("Meat Chickens")),
+        ("layer_chickens", _("Layer Chickens")),
+        ("dual_purpose_chickens", _("Dual Purpose Chickens")),
+    ]
+    FORMAT_CHOICES = [
+        ("in_person", _("In-person")),
+        ("online", _("Online")),
+    ]
+
+    name = models.CharField(max_length=160)
+    slug = models.SlugField(max_length=180, unique=True)
+    program = models.CharField(max_length=50, choices=PROGRAM_CHOICES)
+    description = models.TextField()
+    training_format = models.CharField(max_length=20, choices=FORMAT_CHOICES)
+    training_date = models.DateField()
+    duration_hours = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)],
+    )
+    schedule = models.CharField(max_length=200, blank=True)
+    location = models.CharField(max_length=160, blank=True)
+    service_area = models.CharField(max_length=160, blank=True)
+    availability = models.CharField(max_length=160, blank=True)
+    price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+    is_available = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    provider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="poultry_trainings",
+    )
+
+    class Meta:
+        ordering = ["training_date", "-created_at"]
+        verbose_name = _("Poultry training")
+        verbose_name_plural = _("Poultry trainings")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("poultrys:poultry_training_detail", kwargs={"slug": self.slug})
+
+    @property
+    def display_price(self):
+        if self.price == 0:
+            return _("Free")
+        return f"{self.price:,.2f} ETB"
+
+
+class TrainingEnrollment(models.Model):
+    PROGRAM_CHOICES = PoultryTraining.PROGRAM_CHOICES
+    STATUS_CHOICES = [
+        ("pending", _("Pending")),
+        ("confirmed", _("Confirmed")),
+        ("cancelled", _("Cancelled")),
     ]
 
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
-    program = models.CharField(max_length=50, choices=PROGRAM_CHOICES)
+    program = models.CharField(
+        max_length=50,
+        choices=PROGRAM_CHOICES,
+        blank=True,
+        default="",
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
+    training = models.ForeignKey(
+        PoultryTraining,
+        on_delete=models.SET_NULL,
+        related_name="enrollments",
+        blank=True,
+        null=True,
+    )
+    trainee = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="poultry_training_enrollments",
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=("training", "trainee"),
+                condition=models.Q(training__isnull=False, trainee__isnull=False),
+                name="uniq_poultry_training_user",
+            ),
+        ]
 
     def __str__(self):
-        return f"{self.name} - {self.program}"
+        if self.training_id:
+            return f"{self.name} - {self.training.name}"
+        return f"{self.name} - {self.get_program_display()}"
