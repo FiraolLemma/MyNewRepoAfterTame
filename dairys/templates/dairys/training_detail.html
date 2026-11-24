@@ -1,0 +1,63 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ course.name }} | {% trans "Dairy Training" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/training.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="dairy-training training-detail-page">
+    {% include "dairys/training_messages.html" %}
+    <a class="training-back-link" href="{% url 'dairys:training' %}">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> {% trans "All trainings" %}
+    </a>
+    <article class="training-detail">
+        <div class="training-detail__banner">
+            <span class="training-eyebrow"><i class="fas fa-graduation-cap" aria-hidden="true"></i> {{ course.get_service_type_display }}</span>
+            <h1>{{ course.name }}</h1>
+            <p>{% trans "Provided by" %} <strong>{{ course.provider.username }}</strong></p>
+        </div>
+        <div class="training-detail__layout">
+            <section class="training-detail__main">
+                <h2>{% trans "About this course" %}</h2>
+                <div class="training-detail__description">{{ course.description|linebreaks }}</div>
+                {% if course.schedule %}<p><strong>{% trans "Schedule:" %}</strong> {{ course.schedule }}</p>{% endif %}
+                {% if course.service_area %}<p><strong>{% trans "Areas served:" %}</strong> {{ course.service_area }}</p>{% endif %}
+                {% if course.availability %}<p><strong>{% trans "Enrollment details:" %}</strong> {{ course.availability }}</p>{% endif %}
+            </section>
+            <aside class="training-detail__aside">
+                <h2>{% trans "Course details" %}</h2>
+                <dl>
+                    <div><dt>{% trans "Date" %}</dt><dd>{% if course.training_date %}{{ course.training_date|date:"M d, Y" }}{% else %}{% trans "To be arranged" %}{% endif %}</dd></div>
+                    <div><dt>{% trans "Format" %}</dt><dd>{% if course.training_format %}{{ course.get_training_format_display }}{% else %}{% trans "To be arranged" %}{% endif %}</dd></div>
+                    {% if course.duration_hours %}<div><dt>{% trans "Duration" %}</dt><dd>{{ course.duration_hours }} {% trans "hours" %}</dd></div>{% endif %}
+                    {% if course.location %}<div><dt>{% trans "Location" %}</dt><dd>{{ course.location }}</dd></div>{% endif %}
+                    <div><dt>{% trans "Fee" %}</dt><dd>{{ course.display_price }}</dd></div>
+                    <div><dt>{% trans "Registered farmers" %}</dt><dd>{{ enrollment_count }}</dd></div>
+                </dl>
+                {% if is_owner %}
+                <p class="training-detail__notice">{% trans "This is your course. Check registrations from your training dashboard." %}</p>
+                <a class="training-button training-button--enroll training-button--full" href="{% url 'dairys:training_dashboard' %}">{% trans "View dashboard" %}</a>
+                {% elif is_registered %}
+                <p class="training-detail__notice training-detail__notice--success"><i class="fas fa-circle-check" aria-hidden="true"></i> {% trans "You are registered for this course." %}</p>
+                <a class="training-button training-button--muted training-button--full" href="{% url 'dairys:training_dashboard' %}">{% trans "View my trainings" %}</a>
+                {% elif is_past %}
+                <p class="training-detail__notice">{% trans "Registration for this course has closed." %}</p>
+                {% else %}
+                <a class="training-button training-button--enroll training-button--full" href="{% url 'dairys:training_enroll' slug=course.slug %}">
+                    <i class="fas fa-user-plus" aria-hidden="true"></i> {% trans "Enroll now" %}
+                </a>
+                {% endif %}
+                {% if request.user.is_authenticated and not is_owner %}
+                <a class="training-detail__message" href="{% url 'conversation:new' app_label='dairys' model_name='dairyservice' object_id=course.pk %}">
+                    <i class="fas fa-envelope" aria-hidden="true"></i> {% trans "Message trainer" %}
+                </a>
+                {% endif %}
+            </aside>
+        </div>
+    </article>
+</main>
+{% endblock %}

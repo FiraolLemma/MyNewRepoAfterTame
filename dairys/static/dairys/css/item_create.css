@@ -80,9 +80,7 @@
     grid-column: 1 / -1;
 }
 
-.dairy-item-create__field input,
-.dairy-item-create__field select,
-.dairy-item-create__field textarea {
+.dairy-item-create__control {
     width: 100%;
     min-height: 42px;
     border: 1px solid #d6e1dc;
@@ -94,14 +92,12 @@
     font-weight: 400;
 }
 
-.dairy-item-create__field textarea {
+.dairy-item-create__field textarea.dairy-item-create__control {
     min-height: 120px;
     resize: vertical;
 }
 
-.dairy-item-create__field input:focus,
-.dairy-item-create__field select:focus,
-.dairy-item-create__field textarea:focus {
+.dairy-item-create__control:focus {
     border-color: #078b4d;
     outline: 2px solid rgba(7, 139, 77, .16);
 }

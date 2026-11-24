@@ -3,21 +3,190 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods
 
 from .forms import (
     DairyConsultationForm,
+    DairyItemForm,
     DairyLivestockForm,
     DairyProductForm,
     DairyServiceForm,
+    DairyTrainingEnrollmentForm,
+    DairyTrainingForm,
 )
-from .models import DairyProduct, DairyService
+from .models import DairyProduct, DairyService, TrainingEnrollment
 
 
 def index(request):
     return render(request, "dairys/index.html")
+
+
+@require_GET
+def training(request):
+    today = timezone.localdate()
+    trainings = DairyService.objects.filter(
+        service_kind="training",
+        is_available=True,
+    ).filter(Q(training_date__isnull=True) | Q(training_date__gte=today))
+
+    topic = request.GET.get("topic", "").strip()
+    search_query = request.GET.get("q", "").strip()[:100]
+    valid_topics = set(DairyService.TRAINING_SERVICE_TYPE_VALUES)
+    if topic in valid_topics:
+        trainings = trainings.filter(service_type=topic)
+    else:
+        topic = ""
+
+    if search_query:
+        trainings = trainings.filter(
+            Q(name__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(location__icontains=search_query)
+            | Q(provider__username__icontains=search_query)
+        )
+
+    topics = [
+        (value, label)
+        for value, label in DairyService.SERVICE_TYPE_CHOICES
+        if value in DairyService.TRAINING_SERVICE_TYPE_VALUES
+    ]
+    return render(
+        request,
+        "dairys/training.html",
+        {
+            "trainings": trainings.select_related("provider"),
+            "training_count": trainings.count(),
+            "topics": topics,
+            "selected_topic": topic,
+            "search_query": search_query,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def training_create(request):
+    if request.method == "POST":
+        form = DairyTrainingForm(request.POST)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.service_kind = "training"
+            course.provider = request.user
+
+            base_slug = slugify(course.name)[:180].strip("-") or "dairy-training"
+            course.slug = base_slug
+            suffix = 2
+            while DairyService.objects.filter(slug=course.slug).exists():
+                suffix_text = f"-{suffix}"
+                course.slug = f"{base_slug[:180 - len(suffix_text)]}{suffix_text}"
+                suffix += 1
+
+            course.save()
+            messages.success(request, _("Your dairy training course is now listed."))
+            return redirect("dairys:training_detail", slug=course.slug)
+    else:
+        form = DairyTrainingForm()
+
+    return render(request, "dairys/training_create.html", {"form": form})
+
+
+@require_GET
+def training_detail(request, slug):
+    course = get_object_or_404(
+        DairyService.objects.select_related("provider"),
+        slug=slug,
+        service_kind="training",
+        is_available=True,
+    )
+    is_owner = request.user.is_authenticated and course.provider_id == request.user.pk
+    is_registered = (
+        request.user.is_authenticated
+        and TrainingEnrollment.objects.filter(
+            training=course,
+            trainee=request.user,
+        ).exists()
+    )
+    return render(
+        request,
+        "dairys/training_detail.html",
+        {
+            "course": course,
+            "is_owner": is_owner,
+            "is_registered": is_registered,
+            "is_past": bool(course.training_date and course.training_date < timezone.localdate()),
+            "enrollment_count": course.enrollments.count(),
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def training_enroll(request, slug):
+    course = get_object_or_404(
+        DairyService.objects.select_related("provider"),
+        slug=slug,
+        service_kind="training",
+        is_available=True,
+    )
+    if course.training_date and course.training_date < timezone.localdate():
+        messages.error(request, _("Registration for this training has closed."))
+        return redirect("dairys:training_detail", slug=course.slug)
+    if course.provider_id == request.user.pk:
+        messages.error(request, _("You cannot enroll in your own training course."))
+        return redirect("dairys:training_detail", slug=course.slug)
+
+    if request.method == "POST":
+        form = DairyTrainingEnrollmentForm(
+            request.POST,
+            training=course,
+            trainee=request.user,
+        )
+        if form.is_valid():
+            enrollment = form.save(commit=False)
+            enrollment.training = course
+            enrollment.trainee = request.user
+            enrollment.topic = course.service_type
+            enrollment.format = course.training_format
+            enrollment.save()
+            messages.success(
+                request,
+                _("You are registered for %(course)s.") % {"course": course.name},
+            )
+            return redirect("dairys:training_detail", slug=course.slug)
+    else:
+        form = DairyTrainingEnrollmentForm(training=course, trainee=request.user)
+
+    return render(
+        request,
+        "dairys/training_enroll.html",
+        {"form": form, "course": course},
+    )
+
+
+@login_required
+@require_GET
+def training_dashboard(request):
+    courses = (
+        DairyService.objects.filter(
+            service_kind="training",
+            provider=request.user,
+        )
+        .prefetch_related("enrollments__trainee")
+        .order_by("-created_at")
+    )
+    enrollments = (
+        TrainingEnrollment.objects.filter(trainee=request.user)
+        .select_related("training", "training__provider")
+        .order_by("-created_at")
+    )
+    return render(
+        request,
+        "dairys/training_dashboard.html",
+        {"courses": courses, "enrollments": enrollments},
+    )
 
 
 def items(request):
@@ -52,6 +221,33 @@ def item_detail(request, item_id):
         main_category="items",
     )
     return render(request, "dairys/item_detail.html", {"item": item})
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def item_create(request):
+    if request.method == "POST":
+        form = DairyItemForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            item = form.save(commit=False)
+            item.main_category = "items"
+            item.created_by = request.user
+
+            base_slug = slugify(item.name)[:180].strip("-") or "dairy-item"
+            item.slug = base_slug
+            suffix = 2
+            while DairyProduct.objects.filter(slug=item.slug).exists():
+                suffix_text = f"-{suffix}"
+                item.slug = f"{base_slug[:180 - len(suffix_text)]}{suffix_text}"
+                suffix += 1
+
+            item.save()
+            messages.success(request, _("Your dairy item is now listed."))
+            return redirect("dairys:item_detail", item_id=item.pk)
+    else:
+        form = DairyItemForm(user=request.user)
+
+    return render(request, "dairys/item_create.html", {"form": form})
 
 
 def products(request):

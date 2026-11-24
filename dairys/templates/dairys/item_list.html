@@ -67,6 +67,9 @@
                             <option value="name">Name: A to Z</option>
                         </select>
                     </label>
+                    <a class="dairy-items-create-link" href="{% url 'dairys:item_create' %}">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> List an item
+                    </a>
                 </div>
             </header>
 
@@ -77,7 +80,7 @@
                          data-category="{{ item.item_group|default:'' }}"
                          data-price="{{ item.price }}"
                          data-name="{{ item.name|lower }}"
-                         data-search="{{ item.name }} {{ item.subcategory }} {{ item.get_item_group_display }} {{ item.location }}"
+                         data-search="{{ item.name }} {{ item.subcategory }} {{ item.get_item_group_display }} {{ item.location }} {{ item.sellername }}"
                          data-created="{{ item.created_at|date:'U' }}">
                     <a class="dairy-item-card__image-link" href="{% url 'dairys:item_detail' item.pk %}" aria-label="View {{ item.name }}">
                         {% if item.main_image %}
@@ -91,7 +94,7 @@
                         <p class="dairy-item-card__price">ETB {{ item.price|floatformat:"2" }}</p>
                         <p class="dairy-item-card__seller">
                             <i class="fa-solid fa-user" aria-hidden="true"></i>
-                            {{ item.seller_name }}
+                            {{ item.sellername }}
                         </p>
                         <p class="dairy-item-card__details">
                             <i class="fa-solid fa-box" aria-hidden="true"></i>
@@ -99,9 +102,13 @@
                             {% if item.location %}<span aria-hidden="true"> &middot; </span>{{ item.location }}{% endif %}
                         </p>
                         <div class="dairy-item-card__actions">
+                            {% if item.quantity_available %}
                             <a class="dairy-item-button dairy-item-button--cart" href="{% url 'cart:add_to_cart' 'dairys' 'dairyproduct' item.pk %}">
                                 <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Add to Cart
                             </a>
+                            {% else %}
+                            <span class="dairy-item-button dairy-item-button--unavailable" aria-label="Out of stock">Sold out</span>
+                            {% endif %}
                             <a class="dairy-item-button dairy-item-button--view" href="{% url 'dairys:item_detail' item.pk %}">
                                 <i class="fa-solid fa-eye" aria-hidden="true"></i> View
                             </a>

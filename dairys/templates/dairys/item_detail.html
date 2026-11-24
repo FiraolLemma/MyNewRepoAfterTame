@@ -37,7 +37,7 @@
 
             <div class="dairy-item-detail__seller">
                 <i class="fa-solid fa-user" aria-hidden="true"></i>
-                <span>{{ item.seller_name }}</span>
+                <span>{{ item.sellername }}</span>
             </div>
 
             <p class="dairy-item-detail__description">{{ item.description|linebreaksbr }}</p>
@@ -62,9 +62,11 @@
             </dl>
 
             <div class="dairy-item-detail__actions">
+                {% if item.quantity_available %}
                 <a class="dairy-item-detail__cart" href="{% url 'cart:add_to_cart' 'dairys' 'dairyproduct' item.pk %}">
                     <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Add to Cart
                 </a>
+                {% endif %}
                 <button class="dairy-item-detail__share" type="button" data-item-share>
                     <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Share
                 </button>

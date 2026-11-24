@@ -1,0 +1,56 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Enroll in" %} {{ course.name }} | {% trans "Dairy Training" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/training.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="dairy-training training-form-page">
+    {% include "dairys/training_messages.html" %}
+    <a class="training-back-link" href="{% url 'dairys:training_detail' slug=course.slug %}">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> {% trans "Back to course" %}
+    </a>
+    <div class="training-enroll-layout">
+        <section class="training-form-panel" aria-labelledby="training-enroll-title">
+            <span class="training-eyebrow training-eyebrow--green"><i class="fas fa-user-plus" aria-hidden="true"></i> {% trans "Course registration" %}</span>
+            <h1 id="training-enroll-title">{% trans "Enroll in this training" %}</h1>
+            <p class="training-form-intro">{{ course.name }} · {{ course.get_service_type_display }}</p>
+            <form method="post" class="training-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="training-form__grid">
+                    {% for field in form %}
+                    <div class="training-form__field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span aria-hidden="true"> *</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<p class="training-form__help">{{ field.help_text }}</p>{% endif %}
+                        {{ field.errors }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="training-form__notice"><i class="fas fa-lock" aria-hidden="true"></i> {% trans "Your registration is linked to your account. The trainer will use these contact details to follow up." %}</p>
+                <div class="training-form__actions">
+                    <a class="training-button training-button--muted" href="{% url 'dairys:training_detail' slug=course.slug %}">{% trans "Cancel" %}</a>
+                    <button class="training-button training-button--enroll" type="submit">
+                        <i class="fas fa-check" aria-hidden="true"></i> {% trans "Confirm enrollment" %}
+                    </button>
+                </div>
+            </form>
+        </section>
+        <aside class="training-enroll-summary">
+            <h2>{{ course.name }}</h2>
+            <p>{{ course.description|truncatewords:24 }}</p>
+            <dl>
+                <div><dt>{% trans "Date" %}</dt><dd>{% if course.training_date %}{{ course.training_date|date:"M d, Y" }}{% else %}{% trans "To be arranged" %}{% endif %}</dd></div>
+                <div><dt>{% trans "Format" %}</dt><dd>{{ course.get_training_format_display }}</dd></div>
+                {% if course.duration_hours %}<div><dt>{% trans "Duration" %}</dt><dd>{{ course.duration_hours }} {% trans "hours" %}</dd></div>{% endif %}
+                <div><dt>{% trans "Fee" %}</dt><dd>{{ course.display_price }}</dd></div>
+            </dl>
+        </aside>
+    </div>
+</main>
+{% endblock %}

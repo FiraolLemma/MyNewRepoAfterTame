@@ -150,6 +150,12 @@
     color: #fff;
 }
 
+.dairy-item-detail__cart:focus-visible,
+.dairy-item-detail__share:focus-visible {
+    outline: 2px solid #21a768;
+    outline-offset: 3px;
+}
+
 .dairy-item-detail__cart:hover {
     background: #006d3c;
     color: #fff;
@@ -162,12 +168,6 @@
 
 .dairy-item-detail__share:hover {
     background: #eff8f2;
-}
-
-.dairy-item-detail__cart:focus-visible,
-.dairy-item-detail__share:focus-visible {
-    outline: 2px solid #21a768;
-    outline-offset: 3px;
 }
 
 .dairy-item-detail__status {

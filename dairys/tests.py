@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import DairyConsultation, DairyProduct, DairyService
+from .models import DairyConsultation, DairyProduct, DairyService, TrainingEnrollment
 
 
 class DairyLivestockTests(TestCase):
@@ -141,6 +141,192 @@ class DairyLivestockTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "This field is required.")
         self.assertFalse(DairyProduct.objects.filter(name="Uncategorized Animal").exists())
+
+
+class DairyTrainingTests(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.trainer = user_model.objects.create_user(
+            username="dairy-trainer",
+            phone_number="+251911111104",
+            password="7391",
+        )
+        self.farmer = user_model.objects.create_user(
+            username="dairy-farmer",
+            phone_number="+251911111105",
+            password="7391",
+            email="farmer@example.com",
+        )
+        self.course = self.create_course()
+
+    def create_course(self, **overrides):
+        values = {
+            "name": "Dairy Farm Management",
+            "slug": "dairy-farm-management",
+            "service_kind": "training",
+            "service_type": "cattle_feeding",
+            "description": "Practical feeding plans for dairy cattle.",
+            "training_format": "in_person",
+            "training_date": timezone.localdate() + timedelta(days=7),
+            "duration_hours": 3,
+            "location": "Bishoftu",
+            "price": Decimal("250.00"),
+            "provider": self.trainer,
+        }
+        values.update(overrides)
+        return DairyService.objects.create(**values)
+
+    def enroll(self, course=None, **overrides):
+        values = {
+            "name": self.farmer.username,
+            "email": self.farmer.email,
+            "phone": self.farmer.phone_number,
+        }
+        values.update(overrides)
+        return self.client.post(
+            reverse(
+                "dairys:training_enroll",
+                kwargs={"slug": (course or self.course).slug},
+            ),
+            values,
+        )
+
+    def test_guest_can_browse_and_filter_available_dairy_training(self):
+        other_course = self.create_course(
+            name="Clean Milk Hygiene",
+            slug="clean-milk-hygiene",
+            service_type="clean_milk_hygiene",
+        )
+
+        response = self.client.get(
+            reverse("dairys:training"),
+            {"topic": "cattle_feeding"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.course.name)
+        self.assertNotContains(response, other_course.name)
+        self.assertContains(response, reverse("dairys:training_create"))
+
+    def test_trainer_can_publish_a_dated_training_course(self):
+        self.client.force_login(self.trainer)
+        training_date = timezone.localdate() + timedelta(days=14)
+
+        response = self.client.post(
+            reverse("dairys:training_create"),
+            {
+                "name": "Calf Rearing Basics",
+                "service_type": "calf_rearing",
+                "description": "Hands-on calf rearing fundamentals.",
+                "training_format": "online",
+                "training_date": training_date.isoformat(),
+                "duration_hours": "2",
+                "schedule": "Saturday morning",
+                "location": "",
+                "service_area": "All regions",
+                "availability": "20 places",
+                "price": "0",
+            },
+        )
+
+        course = DairyService.objects.get(name="Calf Rearing Basics")
+        self.assertRedirects(
+            response,
+            reverse("dairys:training_detail", kwargs={"slug": course.slug}),
+        )
+        self.assertEqual(course.provider, self.trainer)
+        self.assertEqual(course.service_kind, "training")
+        self.assertEqual(course.training_date, training_date)
+        self.assertEqual(course.slug, "calf-rearing-basics")
+
+    def test_trainer_cannot_publish_a_past_course_date(self):
+        self.client.force_login(self.trainer)
+
+        response = self.client.post(
+            reverse("dairys:training_create"),
+            {
+                "name": "Past Dairy Course",
+                "service_type": "calf_rearing",
+                "description": "A course in the past.",
+                "training_format": "online",
+                "training_date": (timezone.localdate() - timedelta(days=1)).isoformat(),
+                "duration_hours": "2",
+                "price": "0",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Choose today or a future date.")
+        self.assertFalse(DairyService.objects.filter(name="Past Dairy Course").exists())
+
+    def test_guest_must_sign_in_to_enroll(self):
+        response = self.client.get(
+            reverse("dairys:training_enroll", kwargs={"slug": self.course.slug})
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("login", response.url)
+
+    def test_farmer_can_enroll_and_trainer_can_view_registration(self):
+        self.client.force_login(self.farmer)
+
+        response = self.enroll()
+
+        self.assertRedirects(
+            response,
+            reverse("dairys:training_detail", kwargs={"slug": self.course.slug}),
+        )
+        enrollment = TrainingEnrollment.objects.get()
+        self.assertEqual(enrollment.training, self.course)
+        self.assertEqual(enrollment.trainee, self.farmer)
+        self.assertEqual(enrollment.topic, self.course.service_type)
+        self.assertEqual(enrollment.format, self.course.training_format)
+
+        self.client.force_login(self.trainer)
+        dashboard_response = self.client.get(reverse("dairys:training_dashboard"))
+
+        self.assertContains(dashboard_response, self.course.name)
+        self.assertContains(dashboard_response, self.farmer.username)
+        self.assertContains(dashboard_response, self.farmer.phone_number)
+
+    def test_farmer_cannot_enroll_twice_or_in_own_course(self):
+        self.client.force_login(self.farmer)
+        self.enroll()
+
+        duplicate_response = self.enroll()
+
+        self.assertEqual(duplicate_response.status_code, 200)
+        self.assertContains(duplicate_response, "already registered")
+        self.assertEqual(TrainingEnrollment.objects.count(), 1)
+
+        self.client.force_login(self.trainer)
+        owner_response = self.enroll()
+
+        self.assertRedirects(
+            owner_response,
+            reverse("dairys:training_detail", kwargs={"slug": self.course.slug}),
+        )
+        self.assertEqual(TrainingEnrollment.objects.count(), 1)
+
+    def test_past_courses_are_not_listed_or_open_for_registration(self):
+        past_course = self.create_course(
+            name="Earlier course",
+            slug="earlier-course",
+            training_date=timezone.localdate() - timedelta(days=1),
+        )
+
+        listing = self.client.get(reverse("dairys:training"))
+        self.assertNotContains(listing, past_course.name)
+
+        self.client.force_login(self.farmer)
+        response = self.client.get(
+            reverse("dairys:training_enroll", kwargs={"slug": past_course.slug})
+        )
+        self.assertRedirects(
+            response,
+            reverse("dairys:training_detail", kwargs={"slug": past_course.slug}),
+        )
+        self.assertFalse(TrainingEnrollment.objects.filter(training=past_course).exists())
 
 
 class DairyConsultancyTests(TestCase):

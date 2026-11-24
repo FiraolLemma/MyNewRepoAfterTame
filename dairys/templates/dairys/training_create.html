@@ -1,0 +1,55 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Publish a Dairy Training | Sheger City" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/training.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="dairy-training training-form-page">
+    {% include "dairys/training_messages.html" %}
+    <a class="training-back-link" href="{% url 'dairys:training' %}">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> {% trans "Back to trainings" %}
+    </a>
+    <div class="training-form-layout">
+        <section class="training-form-panel" aria-labelledby="training-form-title">
+            <span class="training-eyebrow training-eyebrow--green"><i class="fas fa-seedling" aria-hidden="true"></i> {% trans "Teach dairy farmers" %}</span>
+            <h1 id="training-form-title">{% trans "Publish a training course" %}</h1>
+            <p class="training-form-intro">{% trans "Describe your course, set its date and format, and let farmers know what they will learn." %}</p>
+            <form method="post" class="training-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="training-form__grid">
+                    {% for field in form %}
+                    <div class="training-form__field{% if field.name == 'description' %} training-form__field--wide{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span aria-hidden="true"> *</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<p class="training-form__help">{{ field.help_text }}</p>{% endif %}
+                        {{ field.errors }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="training-form__actions">
+                    <a class="training-button training-button--muted" href="{% url 'dairys:training' %}">{% trans "Cancel" %}</a>
+                    <button class="training-button training-button--enroll" type="submit">
+                        <i class="fas fa-check" aria-hidden="true"></i> {% trans "Publish course" %}
+                    </button>
+                </div>
+            </form>
+        </section>
+        <aside class="training-form-aside">
+            <span class="training-form-aside__icon"><i class="fas fa-chalkboard-user" aria-hidden="true"></i></span>
+            <h2>{% trans "Reach farmers who want to grow" %}</h2>
+            <p>{% trans "A clear title, date, and course description help farmers choose the right training for their farms." %}</p>
+            <ul>
+                <li><i class="fas fa-check" aria-hidden="true"></i> {% trans "Choose your dairy training topic" %}</li>
+                <li><i class="fas fa-check" aria-hidden="true"></i> {% trans "Set the date, format, and duration" %}</li>
+                <li><i class="fas fa-check" aria-hidden="true"></i> {% trans "Review registrations in your training dashboard" %}</li>
+            </ul>
+        </aside>
+    </div>
+</main>
+{% endblock %}

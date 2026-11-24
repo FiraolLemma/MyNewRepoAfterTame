@@ -22,7 +22,6 @@
             </div>
         </header>
 
-        {% if form %}
         <form class="dairy-item-create__form" method="post" enctype="multipart/form-data" data-item-create-form>
             {% csrf_token %}
             {% if form.non_field_errors %}
@@ -43,11 +42,6 @@
                 <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Publish Item
             </button>
         </form>
-        {% else %}
-        <p class="dairy-item-create__notice" role="status">
-            The item submission form is not available on this page yet. Return to the listings to browse available items.
-        </p>
-        {% endif %}
     </section>
 </main>
 {% endblock %}

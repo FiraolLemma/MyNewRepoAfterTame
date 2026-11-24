@@ -40,18 +40,47 @@ class TrainingEnrollment(models.Model):
         ("in_person", _("In-person")),
         ("online", _("Online")),
     ]
+    STATUS_CHOICES = [
+        ("pending", _("Pending")),
+        ("confirmed", _("Confirmed")),
+        ("cancelled", _("Cancelled")),
+    ]
 
     name = models.CharField(max_length=160)
     email = models.EmailField()
     phone = models.CharField(max_length=40)
-    topic = models.CharField(max_length=100, choices=TOPIC_CHOICES)
-    format = models.CharField(max_length=20, choices=FORMAT_CHOICES)
+    topic = models.CharField(max_length=100, choices=TOPIC_CHOICES, blank=True, default="")
+    format = models.CharField(max_length=20, choices=FORMAT_CHOICES, blank=True, default="")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
+    training = models.ForeignKey(
+        "DairyService",
+        on_delete=models.SET_NULL,
+        related_name="enrollments",
+        blank=True,
+        null=True,
+    )
+    trainee = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="dairy_training_enrollments",
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=("training", "trainee"),
+                condition=models.Q(training__isnull=False, trainee__isnull=False),
+                name="unique_dairy_training_enrollment",
+            ),
+        ]
 
     def __str__(self):
+        if self.training_id:
+            return f"{self.name} - {self.training.name}"
         return f"{self.name} - {self.get_topic_display()}"
 
 
@@ -175,6 +204,12 @@ class DairyService(models.Model):
         "breeding_ai",
         "milk_yield",
     )
+    TRAINING_SERVICE_TYPE_VALUES = (
+        "clean_milk_hygiene",
+        "cattle_feeding",
+        "calf_rearing",
+        "processing_workshop",
+    )
     SERVICE_KIND_CHOICES = [
         ("training", _("Dairy Farm Training")),
         ("consulting", _("Dairy Farm Consulting")),
@@ -200,6 +235,12 @@ class DairyService(models.Model):
     service_type = models.CharField(max_length=100, choices=SERVICE_TYPE_CHOICES)
     description = models.TextField()
     training_format = models.CharField(max_length=20, choices=TRAINING_FORMAT_CHOICES, blank=True)
+    training_date = models.DateField(blank=True, null=True)
+    duration_hours = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1)],
+    )
     schedule = models.CharField(max_length=200, blank=True)
     location = models.CharField(max_length=160, blank=True)
     service_area = models.CharField(max_length=160, blank=True)
@@ -223,6 +264,8 @@ class DairyService(models.Model):
     def get_absolute_url(self):
         if self.service_kind == "consulting":
             return f"{reverse('dairys:veterinary_consultancy')}#consultant-{self.pk}"
+        if self.service_kind == "training":
+            return reverse("dairys:training_detail", kwargs={"slug": self.slug})
         return reverse("dairys:index")
 
     @property

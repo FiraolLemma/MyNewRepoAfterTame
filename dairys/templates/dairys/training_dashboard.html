@@ -1,0 +1,95 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "My Dairy Trainings | Sheger City" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'dairys/css/training.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="dairy-training training-dashboard">
+    {% include "dairys/training_messages.html" %}
+    <div class="training-dashboard__heading">
+        <div>
+            <span class="training-eyebrow training-eyebrow--green"><i class="fas fa-user" aria-hidden="true"></i> {% trans "Your learning and teaching" %}</span>
+            <h1>{% trans "My dairy trainings" %}</h1>
+            <p>{% trans "Manage your published courses and keep track of the trainings you joined." %}</p>
+        </div>
+        <a class="training-button training-button--enroll" href="{% url 'dairys:training_create' %}">
+            <i class="fas fa-plus" aria-hidden="true"></i> {% trans "Publish a course" %}
+        </a>
+    </div>
+
+    <section class="training-dashboard-section" aria-labelledby="provided-courses-title">
+        <h2 id="provided-courses-title">{% trans "Courses I provide" %}</h2>
+        {% if courses %}
+        <div class="training-dashboard-list">
+            {% for course in courses %}
+            <article class="training-dashboard-card">
+                <div class="training-dashboard-card__heading">
+                    <div>
+                        <p class="training-card__topic">{{ course.get_service_type_display }}</p>
+                        <h3><a href="{% url 'dairys:training_detail' slug=course.slug %}">{{ course.name }}</a></h3>
+                        <p class="training-dashboard-card__meta">
+                            {% if course.training_date %}{{ course.training_date|date:"M d, Y" }}{% else %}{% trans "Date to be arranged" %}{% endif %}
+                            · {{ course.enrollments.count }} {% trans "registrations" %}
+                        </p>
+                    </div>
+                    <a class="training-button training-button--muted" href="{% url 'dairys:training_detail' slug=course.slug %}">{% trans "View course" %}</a>
+                </div>
+                {% if course.enrollments.all %}
+                <div class="training-registrants">
+                    <h4>{% trans "Registered farmers" %}</h4>
+                    {% for enrollment in course.enrollments.all %}
+                    <div class="training-registrant">
+                        <span class="training-registrant__name">{{ enrollment.name }}</span>
+                        <span>{{ enrollment.phone }}</span>
+                        <a href="mailto:{{ enrollment.email }}">{{ enrollment.email }}</a>
+                        <span class="training-status training-status--{{ enrollment.status }}">{{ enrollment.get_status_display }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="training-dashboard-card__empty">{% trans "No farmers have registered yet." %}</p>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="training-empty training-empty--compact">
+            <h3>{% trans "You have not published a course yet" %}</h3>
+            <p>{% trans "Share your expertise by creating a dairy training course." %}</p>
+            <a class="training-button training-button--enroll" href="{% url 'dairys:training_create' %}">{% trans "Publish a course" %}</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="training-dashboard-section" aria-labelledby="enrolled-courses-title">
+        <h2 id="enrolled-courses-title">{% trans "Courses I joined" %}</h2>
+        {% if enrollments %}
+        <div class="training-grid training-grid--dashboard">
+            {% for enrollment in enrollments %}
+            <article class="training-dashboard-card training-dashboard-card--enrollment">
+                {% if enrollment.training %}
+                <p class="training-card__topic">{{ enrollment.training.get_service_type_display }}</p>
+                <h3><a href="{% url 'dairys:training_detail' slug=enrollment.training.slug %}">{{ enrollment.training.name }}</a></h3>
+                <p>{% trans "Trainer:" %} {{ enrollment.training.provider.username }}</p>
+                {% else %}
+                <h3>{% trans "Training course no longer available" %}</h3>
+                {% endif %}
+                <span class="training-status training-status--{{ enrollment.status }}">{{ enrollment.get_status_display }}</span>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="training-empty training-empty--compact">
+            <h3>{% trans "You have not joined a course yet" %}</h3>
+            <p>{% trans "Browse available dairy trainings and register for one that fits your farm." %}</p>
+            <a class="training-button training-button--enroll" href="{% url 'dairys:training' %}">{% trans "Browse trainings" %}</a>
+        </div>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

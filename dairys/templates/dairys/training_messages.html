@@ -1,0 +1,8 @@
+{% load i18n %}
+{% if messages %}
+<div class="training-messages" role="status" aria-live="polite">
+    {% for message in messages %}
+    <p class="training-message training-message--{{ message.tags }}">{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}

@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from companies.forms import OrganizationSelectionMixin
 
-from .models import DairyConsultation, DairyProduct, DairyService
+from .models import DairyConsultation, DairyProduct, DairyService, TrainingEnrollment
 
 
 class DairyLivestockForm(OrganizationSelectionMixin, forms.ModelForm):
@@ -97,6 +97,52 @@ class DairyProductForm(OrganizationSelectionMixin, forms.ModelForm):
         return self.cleaned_data["name"].strip()
 
 
+class DairyItemForm(OrganizationSelectionMixin, forms.ModelForm):
+    class Meta:
+        model = DairyProduct
+        fields = (
+            "name",
+            "item_group",
+            "subcategory",
+            "description",
+            "price",
+            "unit",
+            "quantity_available",
+            "location",
+            "main_image",
+            "company",
+            "farm",
+        )
+        labels = {
+            "name": _("Listing title"),
+            "item_group": _("Item category"),
+            "subcategory": _("Item type or model"),
+            "price": _("Price (ETB)"),
+            "quantity_available": _("Quantity available"),
+            "main_image": _("Item photo"),
+        }
+        widgets = {
+            "description": forms.Textarea(
+                attrs={
+                    "rows": 5,
+                    "placeholder": _("Describe the item's condition, specifications, and included accessories."),
+                }
+            ),
+            "price": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
+            "quantity_available": forms.NumberInput(attrs={"min": "0", "step": "1"}),
+            "main_image": forms.ClearableFileInput(attrs={"accept": "image/*"}),
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, user=user, **kwargs)
+        self.fields["item_group"].required = True
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "dairy-item-create__control")
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip()
+
+
 class DairyServiceForm(forms.ModelForm):
     class Meta:
         model = DairyService
@@ -158,6 +204,112 @@ class DairyServiceForm(forms.ModelForm):
 
     def clean_name(self):
         return self.cleaned_data["name"].strip()
+
+
+class DairyTrainingForm(forms.ModelForm):
+    class Meta:
+        model = DairyService
+        fields = (
+            "name",
+            "service_type",
+            "description",
+            "training_format",
+            "training_date",
+            "duration_hours",
+            "schedule",
+            "location",
+            "service_area",
+            "availability",
+            "price",
+        )
+        labels = {
+            "name": _("Course title"),
+            "service_type": _("Training topic"),
+            "description": _("Course description"),
+            "training_format": _("Training format"),
+            "training_date": _("Training date"),
+            "duration_hours": _("Duration (hours)"),
+            "schedule": _("Schedule or session times"),
+            "location": _("Training location"),
+            "service_area": _("Areas served"),
+            "availability": _("Available places or enrollment details"),
+            "price": _("Course fee (ETB)"),
+        }
+        widgets = {
+            "description": forms.Textarea(
+                attrs={"rows": 5, "maxlength": "2000"}
+            ),
+            "training_date": forms.DateInput(attrs={"type": "date"}),
+            "duration_hours": forms.NumberInput(attrs={"min": "1", "step": "1"}),
+            "price": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["service_type"].choices = [
+            (value, label)
+            for value, label in DairyService.SERVICE_TYPE_CHOICES
+            if value in DairyService.TRAINING_SERVICE_TYPE_VALUES
+        ]
+        self.fields["training_format"].required = True
+        self.fields["training_date"].required = True
+        self.fields["duration_hours"].required = True
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "training-form__control")
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip()
+
+    def clean_training_date(self):
+        training_date = self.cleaned_data["training_date"]
+        if training_date < timezone.localdate():
+            raise forms.ValidationError(_("Choose today or a future date."))
+        return training_date
+
+
+class DairyTrainingEnrollmentForm(forms.ModelForm):
+    class Meta:
+        model = TrainingEnrollment
+        fields = ("name", "email", "phone")
+        labels = {
+            "name": _("Your name"),
+            "email": _("Email address"),
+            "phone": _("Phone number"),
+        }
+        widgets = {
+            "name": forms.TextInput(attrs={"autocomplete": "name"}),
+            "email": forms.EmailInput(attrs={"autocomplete": "email"}),
+            "phone": forms.TelInput(attrs={"autocomplete": "tel"}),
+        }
+
+    def __init__(self, *args, training, trainee, **kwargs):
+        self.training = training
+        self.trainee = trainee
+        initial = kwargs.get("initial") or {}
+        initial.setdefault("name", trainee.username)
+        initial.setdefault("email", trainee.email or "")
+        initial.setdefault("phone", trainee.phone_number)
+        kwargs["initial"] = initial
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "training-form__control")
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip()
+
+    def clean_phone(self):
+        return self.cleaned_data["phone"].strip()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if TrainingEnrollment.objects.filter(
+            training=self.training,
+            trainee=self.trainee,
+        ).exists():
+            raise forms.ValidationError(
+                _("You are already registered for this training.")
+            )
+        return cleaned_data
 
 
 class DairyConsultationForm(forms.ModelForm):
